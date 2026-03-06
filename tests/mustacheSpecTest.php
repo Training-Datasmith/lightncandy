@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use LightnCandy\LightnCandy;
 use PHPUnit\Framework\TestCase;
 
 $tmpdir = sys_get_temp_dir();
 
-function getFunctionCode($func) {
+function getFunctionCode($func)
+{
     eval("\$v = $func;");
     return $v;
 }
@@ -28,7 +31,7 @@ class MustacheSpecTest extends TestCase
             ($spec['name'] == 'Section - Alternate Delimiters') ||
             ($spec['name'] == 'Section - Multiple Calls') ||
             ($spec['name'] == 'Inverted Section')
-           ) {
+        ) {
             $this->markTestIncomplete('Not supported case: complex mustache lambdas');
         }
 
@@ -36,35 +39,34 @@ class MustacheSpecTest extends TestCase
             $spec['data']['lambda'] = getFunctionCode('function ($text = null) {' . $spec['data']['lambda']['php'] . '}');
         }
 
-        foreach (array($flag, $flag | LightnCandy::FLAG_STANDALONEPHP) as $f) {
+        foreach ([$flag, $flag | LightnCandy::FLAG_STANDALONEPHP] as $f) {
             global $calls;
             $calls = 0;
-            $php = LightnCandy::compile($spec['template'], array(
+            $php = LightnCandy::compile($spec['template'], [
                 'flags' => $f,
                 'partials' => isset($spec['partials']) ? $spec['partials'] : null,
                 'basedir' => $tmpdir,
-            ));
+            ]);
             $parsed = print_r(LightnCandy::$lastParsed, true);
             $renderer = LightnCandy::prepare($php);
-            $this->assertEquals($spec['expected'], $renderer($spec['data'], array('debug' => 0)), "SPEC:\n" . print_r($spec, true) . "\nPHP CODE: $php\nPARSED: $parsed");
+            $this->assertEquals($spec['expected'], $renderer($spec['data'], ['debug' => 0]), "SPEC:\n" . print_r($spec, true) . "\nPHP CODE: $php\nPARSED: $parsed");
         }
     }
 
     public function jsonSpecProvider()
     {
-        $ret = array();
+        $ret = [];
 
         foreach (glob('specs/mustache/specs/*.json') as $file) {
-            $i=0;
+            $i = 0;
             $json = json_decode(file_get_contents($file), true);
             $ret = array_merge($ret, array_map(function ($d) use ($file, &$i) {
                 $d['file'] = $file;
                 $d['no'] = ++$i;
-                return array($d);
+                return [$d];
             }, $json['tests']));
         }
 
         return $ret;
     }
 }
-

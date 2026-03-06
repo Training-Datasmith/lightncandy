@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
 
 MIT License
@@ -115,12 +117,12 @@ class Validator
         } else {
             static::pushPartial($context, Token::toString($context['currentToken']));
             switch ($context['currentToken'][Token::POS_OP]) {
-            case '#*':
-                array_unshift($context['inlinepartial'], '');
-                break;
-            case '#>':
-                array_unshift($context['partialblock'], '');
-                break;
+                case '#*':
+                    array_unshift($context['inlinepartial'], '');
+                    break;
+                case '#>':
+                    array_unshift($context['partialblock'], '');
+                    break;
             }
         }
         $context['parsed'][0][] = $token;
@@ -483,7 +485,7 @@ class Validator
         }
         // if we didn't match our $pop, we didn't actually do a level, so only subtract a level here
         $context['level']--;
-        $pop2 = ($c >= 0) ? $context['stack'][$c]: '';
+        $pop2 = ($c >= 0) ? $context['stack'][$c] : '';
         switch ($context['currentToken'][Token::POS_INNERTAG]) {
             case 'with':
                 if (!$context['flags']['nohbh']) {
@@ -567,7 +569,7 @@ class Validator
                 $context['rawblock'] = false;
             } else {
                 if ($token[Token::POS_OP]) {
-                    $context['error'][] = "Wrong raw block begin with " . Token::toString($token) . ' ! Remove "' . $token[Token::POS_OP] . '" to fix this issue.';
+                    $context['error'][] = 'Wrong raw block begin with ' . Token::toString($token) . ' ! Remove "' . $token[Token::POS_OP] . '" to fix this issue.';
                 }
                 $context['rawblock'] = $token[Token::POS_INNERTAG];
                 Parser::setDelimiter($context);
@@ -717,7 +719,7 @@ class Validator
         if (isset($vars[0][0]) && ($vars[0][0] === 'log')) {
             if (!$context['flags']['nohbh']) {
                 if (count($vars) < 2) {
-                    $context['error'][] = "No argument after {{log}} !";
+                    $context['error'][] = 'No argument after {{log}} !';
                 }
                 $context['usedFeature']['log']++;
                 return true;
@@ -738,9 +740,9 @@ class Validator
         if (isset($vars[0][0]) && ($vars[0][0] === 'lookup')) {
             if (!$context['flags']['nohbh']) {
                 if (count($vars) < 2) {
-                    $context['error'][] = "No argument after {{lookup}} !";
+                    $context['error'][] = 'No argument after {{lookup}} !';
                 } elseif (count($vars) < 3) {
-                    $context['error'][] = "{{lookup}} requires 2 arguments !";
+                    $context['error'][] = '{{lookup}} requires 2 arguments !';
                 }
                 $context['usedFeature']['lookup']++;
                 return true;
@@ -920,7 +922,7 @@ class Validator
             ($lsp && $rsp) // both side cr
                 || ($rsp && !$token[Token::POS_LOTHER]) // first line without left
                 || ($lsp && !$token[Token::POS_ROTHER]) // final line
-            )) {
+        )) {
             // handle partial
             if ($token[Token::POS_OP] === '>') {
                 if (!$context['flags']['noind']) {

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
 
 MIT License
@@ -24,9 +26,9 @@ namespace LightnCandy;
  */
 class SafeString extends Encoder
 {
-    const EXTENDED_COMMENT_SEARCH = '/{{!--.*?--}}/s';
-    const IS_SUBEXP_SEARCH = '/^\(.+\)$/s';
-    const IS_BLOCKPARAM_SEARCH = '/^ +\|(.+)\|$/s';
+    public const EXTENDED_COMMENT_SEARCH = '/{{!--.*?--}}/s';
+    public const IS_SUBEXP_SEARCH = '/^\(.+\)$/s';
+    public const IS_BLOCKPARAM_SEARCH = '/^ +\|(.+)\|$/s';
 
     private $string;
 
@@ -34,7 +36,7 @@ class SafeString extends Encoder
         'flags' => [
             'jstrue' => 1,
             'jsobj' => 1,
-        ]
+        ],
     ];
 
     /**

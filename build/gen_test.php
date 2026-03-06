@@ -1,8 +1,8 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
+declare(strict_types=1);
 
-use LightnCandy\LightnCandy;
+require __DIR__ . '/../vendor/autoload.php';
 
 genTestForClass('Compiler');
 genTestForClass('Context');
@@ -17,7 +17,8 @@ genTestForClass('SafeString');
 genTestForClass('Token');
 genTestForClass('Validator');
 
-function genTestForClass($classname) {
+function genTestForClass($classname)
+{
     ob_start();
 
     echo <<<VAR
@@ -81,4 +82,3 @@ VAR
         die("Can not generate tests into file $fn !!\n");
     }
 }
-

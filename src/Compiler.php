@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
 
 MIT License
@@ -98,7 +100,7 @@ class Compiler extends Validator
         $use = $context['flags']['standalone'] ? Exporter::runtime($context) : "use {$context['runtime']} as {$context['runtimealias']};";
         $stringObject = $context['flags']['method'] || $context['flags']['prop'] ? Exporter::stringobject($context) : '';
         $safeString = (($context['usedFeature']['enc'] > 0) && ($context['flags']['standalone'] === 0)) ? "use {$context['safestring']} as SafeString;" : '';
-        $exportSafeString = (($context['usedFeature']['enc'] > 0) && ($context['flags']['standalone'] >0)) ? Exporter::safestring($context) : '';
+        $exportSafeString = (($context['usedFeature']['enc'] > 0) && ($context['flags']['standalone'] > 0)) ? Exporter::safestring($context) : '';
         // Return generated PHP code string.
         return <<<VAREND
 $stringObject{$safeString}{$use}{$exportSafeString}return function (\$in = null, \$options = null) {
@@ -261,8 +263,8 @@ VAREND
     protected static function getVariableName(array &$context, $var, $lookup = null, $args = null): array
     {
         if (isset($var[0]) && ($var[0] === Parser::LITERAL)) {
-            if ($var[1] === "undefined") {
-                $var[1] = "null";
+            if ($var[1] === 'undefined') {
+                $var[1] = 'null';
             }
             return [$var[1], preg_replace('/\'(.*)\'/', '$1', $var[1])];
         }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use LightnCandy\LightnCandy;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +21,7 @@ class usageTest extends TestCase
 
     public function compileProvider()
     {
-        $default = array(
+        $default = [
             'rootthis' => 0,
             'enc' => 0,
             'raw' => 0,
@@ -43,273 +45,272 @@ class usageTest extends TestCase
             'pblock' => 0,
             'lookup' => 0,
             'log' => 0,
-        );
+        ];
 
-        $compileCases = array(
-             array(
+        $compileCases = [
+             [
                  'template' => 'abc',
-             ),
+             ],
 
-             array(
+             [
                  'template' => 'abc{{def',
-             ),
+             ],
 
-             array(
+             [
                  'template' => 'abc{{def}}',
-                 'expected' => array(
-                     'enc' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'enc' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => 'abc{{{def}}}',
-                 'expected' => array(
-                     'raw' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'raw' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => 'abc{{&def}}',
-                 'expected' => array(
-                     'raw' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'raw' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => 'abc{{this}}',
-                 'expected' => array(
-                     'enc' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'enc' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => 'abc{{this}}',
-                 'options' => array('flags' => LightnCandy::FLAG_THIS),
-                 'expected' => array(
+                 'options' => ['flags' => LightnCandy::FLAG_THIS],
+                 'expected' => [
                      'enc' => 1,
                      'this' => 1,
                      'rootthis' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{#if abc}}OK!{{/if}}',
-                 'expected' => array(
-                     'if' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'if' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{#unless abc}}OK!{{/unless}}',
-                 'expected' => array(
-                     'unless' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'unless' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{#with abc}}OK!{{/with}}',
-                 'expected' => array(
-                     'with' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'with' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{#abc}}OK!{{/abc}}',
-                 'expected' => array(
-                     'sec' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'sec' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{^abc}}OK!{{/abc}}',
-                 'expected' => array(
-                     'isec' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'isec' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{#each abc}}OK!{{/each}}',
-                 'expected' => array(
-                     'each' => 1
-                 ),
-             ),
+                 'expected' => [
+                     'each' => 1,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{! test}}OK!{{! done}}',
-                 'expected' => array(
-                     'comment' => 2
-                 ),
-             ),
+                 'expected' => [
+                     'comment' => 2,
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{../OK}}',
-                 'expected' => array(
+                 'expected' => [
                      'parent' => 1,
                      'enc' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{&../../OK}}',
-                 'expected' => array(
+                 'expected' => [
                      'parent' => 1,
                      'raw' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{&../../../OK}} {{../OK}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                    'helpers' => array(
+                    'helpers' => [
                         'mytest' => function ($context) {
                             return $context;
-                        }
-                    )
-                ),
-                 'expected' => array(
+                        },
+                    ],
+                ],
+                 'expected' => [
                      'parent' => 2,
                      'enc' => 1,
                      'raw' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{mytest ../../../OK}} {{../OK}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                    'helpers' => array(
+                    'helpers' => [
                         'mytest' => function ($context) {
                             return $context;
-                        }
-                    )
-                ),
-                 'expected' => array(
+                        },
+                    ],
+                ],
+                 'expected' => [
                      'parent' => 2,
                      'enc' => 2,
                      'helper' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{mytest . .}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                    'helpers' => array(
+                    'helpers' => [
                         'mytest' => function ($a, $b) {
                             return '';
-                        }
-                    )
-                ),
-                 'expected' => array(
+                        },
+                    ],
+                ],
+                 'expected' => [
                      'rootthis' => 2,
                      'this' => 2,
                      'enc' => 1,
                      'helper' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{mytest (mytest ..)}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                    'helpers' => array(
+                    'helpers' => [
                         'mytest' => function ($context) {
                             return $context;
-                        }
-                    )
-                ),
-                 'expected' => array(
+                        },
+                    ],
+                ],
+                 'expected' => [
                      'parent' => 1,
                      'enc' => 1,
                      'helper' => 2,
                      'subexp' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{mytest (mytest ..) .}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                    'helpers' => array(
+                    'helpers' => [
                         'mytest' => function ($context) {
                             return $context;
-                        }
-                    )
-                ),
-                 'expected' => array(
+                        },
+                    ],
+                ],
+                 'expected' => [
                      'parent' => 1,
                      'rootthis' => 1,
                      'this' => 1,
                      'enc' => 1,
                      'helper' => 2,
                      'subexp' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'template' => '{{mytest (mytest (mytest ..)) .}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                    'helpers' => array(
+                    'helpers' => [
                         'mytest' => function ($context) {
                             return $context;
-                        }
-                    )
-                ),
-                 'expected' => array(
+                        },
+                    ],
+                ],
+                 'expected' => [
                      'parent' => 1,
                      'rootthis' => 1,
                      'this' => 1,
                      'enc' => 1,
                      'helper' => 3,
                      'subexp' => 2,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'id' => '134',
                  'template' => '{{#if 1}}{{keys (keys ../names)}}{{/if}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                    'helpers' => array(
+                    'helpers' => [
                         'keys' => function ($context) {
                             return $context;
-                        }
-                    )
-                ),
-                 'expected' => array(
+                        },
+                    ],
+                ],
+                 'expected' => [
                      'parent' => 1,
                      'enc' => 1,
                      'if' => 1,
                      'helper' => 2,
                      'subexp' => 1,
-                 ),
-             ),
+                 ],
+             ],
 
-             array(
+             [
                  'id' => '196',
                  'template' => '{{log "this is a test"}}',
-                 'options' => array(
+                 'options' => [
                     'flags' => LightnCandy::FLAG_HANDLEBARSJS,
-                ),
-                 'expected' => array(
+                ],
+                 'expected' => [
                      'log' => 1,
                      'enc' => 1,
-                 ),
-             ),
-        );
+                 ],
+             ],
+        ];
 
-        return array_map(function($i) use ($default) {
+        return array_map(function ($i) use ($default) {
             if (!isset($i['options'])) {
-                $i['options'] = array('flags' => 0);
+                $i['options'] = ['flags' => 0];
             }
             if (!isset($i['options']['flags'])) {
                 $i['options']['flags'] = 0;
             }
-            $i['expected'] = array_merge($default, isset($i['expected']) ? $i['expected'] : array());
-            return array($i);
+            $i['expected'] = array_merge($default, isset($i['expected']) ? $i['expected'] : []);
+            return [$i];
         }, $compileCases);
     }
 }
-

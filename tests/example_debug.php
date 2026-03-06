@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 require dirname(__DIR__, 1) . '/vendor/autoload.php';
 
 use LightnCandy\LightnCandy;
@@ -21,10 +23,10 @@ section Value: {{.}}
 {{#unless .}}Unless not OK!{{/unless}}
 ";
 
-$php = LightnCandy::compile($template, array(
-    'flags' => LightnCandy::FLAG_RENDER_DEBUG | LightnCandy::FLAG_HANDLEBARSJS
-));
+$php = LightnCandy::compile($template, [
+    'flags' => LightnCandy::FLAG_RENDER_DEBUG | LightnCandy::FLAG_HANDLEBARSJS,
+]);
 
 $renderer = LightnCandy::prepare($php);
 error_reporting(0);
-echo $renderer(array('name' => 'John'), array('debug' => Runtime::DEBUG_TAGS_ANSI));
+echo $renderer(['name' => 'John'], ['debug' => Runtime::DEBUG_TAGS_ANSI]);

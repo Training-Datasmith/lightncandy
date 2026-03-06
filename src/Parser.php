@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
 
 MIT License
@@ -25,10 +27,10 @@ namespace LightnCandy;
 class Parser extends Token
 {
     // Compile time error handling flags
-    const BLOCKPARAM = 9999;
-    const PARTIALBLOCK = 9998;
-    const LITERAL = -1;
-    const SUBEXP = -2;
+    public const BLOCKPARAM = 9999;
+    public const PARTIALBLOCK = 9998;
+    public const LITERAL = -1;
+    public const SUBEXP = -2;
 
     /**
      * Get partial block id and fix the variable list
@@ -153,7 +155,7 @@ class Parser extends Token
             if (!$context['flags']['parent']) {
                 $context['error'][] = 'Do not support {{../var}}, you should do compile with LightnCandy::FLAG_PARENT flag';
             }
-            $context['usedFeature']['parent'] ++;
+            $context['usedFeature']['parent']++;
         }
 
         if ($context['flags']['advar'] && preg_match('/\\]/', $v)) {
@@ -519,12 +521,10 @@ class Parser extends Token
                         $t = $prev;
                         $detected = static::detectQuote($t);
                         $expect = 0;
-                    }
-                    else {
+                    } else {
                         continue;
                     }
                 }
-
 
                 if ($detected) {
                     $prev = $t;
@@ -537,7 +537,7 @@ class Parser extends Token
                 if (($t === 'as') && (count($vars) > 0)) {
                     $prev = '';
                     $expect = '|';
-                    $stack=1;
+                    $stack = 1;
                     continue;
                 }
 

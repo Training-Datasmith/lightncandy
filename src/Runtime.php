@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
 
 MIT License
@@ -42,11 +44,11 @@ class StringObject
  */
 class Runtime extends Encoder
 {
-    const DEBUG_ERROR_LOG = 1;
-    const DEBUG_ERROR_EXCEPTION = 2;
-    const DEBUG_TAGS = 4;
-    const DEBUG_TAGS_ANSI = 12;
-    const DEBUG_TAGS_HTML = 20;
+    public const DEBUG_ERROR_LOG = 1;
+    public const DEBUG_ERROR_EXCEPTION = 2;
+    public const DEBUG_TAGS = 4;
+    public const DEBUG_TAGS_ANSI = 12;
+    public const DEBUG_TAGS_HTML = 20;
 
     /**
      * Output debug info.
@@ -63,7 +65,7 @@ class Runtime extends Encoder
         // Build array of reference for call_user_func_array
         $P = func_get_args();
         $params = [];
-        for ($i=2;$i<count($P);$i++) {
+        for ($i = 2;$i < count($P);$i++) {
             $params[] = &$P[$i];
         }
         $r = call_user_func_array(($cx['funcs'][$f] ?? "{$cx['runtime']}::$f"), $params);
@@ -178,7 +180,8 @@ class Runtime extends Encoder
                         try {
                             $v = $v->$name();
                             continue;
-                        } catch (\BadMethodCallException $e) {}
+                        } catch (\BadMethodCallException $e) {
+                        }
                     }
                     if ($v instanceof \ArrayAccess) {
                         if (isset($v[$name])) {
@@ -198,7 +201,7 @@ class Runtime extends Encoder
                     if ($cx['flags']['mustlam'] || $cx['flags']['lambda']) {
                         if (!$cx['flags']['knohlp'] && !is_null($args)) {
                             $A = $args ? $args[0] : [];
-                            $A[] = ['hash' => is_array( $args ) ? $args[1] : null, '_this' => $in];
+                            $A[] = ['hash' => is_array($args) ? $args[1] : null, '_this' => $in];
                         } else {
                             $A = [$in];
                         }
@@ -588,7 +591,7 @@ class Runtime extends Encoder
             'hash' => $vars[1],
             'contexts' => count($cx['scopes']) ? $cx['scopes'] : [null],
             'fn.blockParams' => 0,
-            '_this' => &$_this
+            '_this' => &$_this,
         ];
 
         if ($cx['flags']['spvar']) {

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /*
 
 MIT License
@@ -116,10 +118,6 @@ class Exporter
         return $ret;
     }
 
-
-
-
-
     /**
      * Get metadata from ReflectionObject
      *
@@ -147,7 +145,7 @@ class Exporter
 
         return [
             'name' => $refobj->getName(),
-            'code' => substr($lines, $spos, $epos - $spos)
+            'code' => substr($lines, $spos, $epos - $spos),
         ];
     }
 
@@ -162,7 +160,7 @@ class Exporter
 
         return array_reduce(static::getClassMethods($context, $class), function (string $in, $cur): string {
             return $in . $cur[2];
-        }, "if (!class_exists(\"" . addslashes($context['safestringalias']) . "\")) {\nclass {$context['safestringalias']} {\n" . static::getClassStatics($class)) . "}\n}\n";
+        }, 'if (!class_exists("' . addslashes($context['safestringalias']) . "\")) {\nclass {$context['safestringalias']} {\n" . static::getClassStatics($class)) . "}\n}\n";
     }
 
     /**
@@ -232,7 +230,7 @@ class Exporter
         foreach ($constants as $name => $value) {
             $ret .= "            '$name' => ".  (is_string($value) ? "'$value'" : $value) . ",\n";
         }
-        return $ret . "        )";
+        return $ret . '        )';
     }
 
     /**
