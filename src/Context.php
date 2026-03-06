@@ -31,16 +31,16 @@ class Context extends Flags
      *
      * @return array<string,array|string|integer> Context from options
      */
-    public static function create($options)
+    public static function create($options): array
     {
         if (!is_array($options)) {
-            $options = array();
+            $options = [];
         }
 
-        $flags = isset($options['flags']) ? $options['flags'] : static::FLAG_BESTPERFORMANCE;
+        $flags = $options['flags'] ?? static::FLAG_BESTPERFORMANCE;
 
-        $context = array(
-            'flags' => array(
+        $context = [
+            'flags' => [
                 'errorlog' => $flags & static::FLAG_ERROR_LOG,
                 'exception' => $flags & static::FLAG_ERROR_EXCEPTION,
                 'skippartial' => $flags & static::FLAG_ERROR_SKIPPARTIAL,
@@ -74,28 +74,28 @@ class Context extends Flags
                 'nostd' => $flags & static::FLAG_IGNORESTANDALONE,
                 'strpar' => $flags & static::FLAG_STRINGPARAMS,
                 'knohlp' => $flags & static::FLAG_KNOWNHELPERSONLY,
-            ),
-            'delimiters' => array(
-                isset($options['delimiters'][0]) ? $options['delimiters'][0] : '{{',
-                isset($options['delimiters'][1]) ? $options['delimiters'][1] : '}}',
-            ),
+            ],
+            'delimiters' => [
+                $options['delimiters'][0] ?? '{{',
+                $options['delimiters'][1] ?? '}}',
+            ],
             'level' => 0,
-            'stack' => array(),
+            'stack' => [],
             'currentToken' => null,
-            'error' => array(),
-            'elselvl' => array(),
+            'error' => [],
+            'elselvl' => [],
             'elsechain' => false,
-            'tokens' => array(
+            'tokens' => [
                 'standalone' => true,
                 'ahead' => false,
                 'current' => 0,
                 'count' => 0,
                 'partialind' => '',
-            ),
-            'usedPartial' => array(),
-            'partialStack' => array(),
-            'partialCode' => array(),
-            'usedFeature' => array(
+            ],
+            'usedPartial' => [],
+            'partialStack' => [],
+            'partialCode' => [],
+            'usedFeature' => [
                 'rootthis' => 0,
                 'enc' => 0,
                 'raw' => 0,
@@ -119,31 +119,31 @@ class Context extends Flags
                 'pblock' => 0,
                 'lookup' => 0,
                 'log' => 0,
-            ),
-            'usedCount' => array(
-                'var' => array(),
-                'helpers' => array(),
-                'runtime' => array(),
-            ),
+            ],
+            'usedCount' => [
+                'var' => [],
+                'helpers' => [],
+                'runtime' => [],
+            ],
             'compile' => false,
-            'parsed' => array(),
-            'partials' => (isset($options['partials']) && is_array($options['partials'])) ? $options['partials'] : array(),
-            'partialblock' => array(),
-            'inlinepartial' => array(),
-            'helpers' => array(),
-            'renderex' => isset($options['renderex']) ? $options['renderex'] : '',
+            'parsed' => [],
+            'partials' => (isset($options['partials']) && is_array($options['partials'])) ? $options['partials'] : [],
+            'partialblock' => [],
+            'inlinepartial' => [],
+            'helpers' => [],
+            'renderex' => $options['renderex'] ?? '',
             'prepartial' => (isset($options['prepartial']) && is_callable($options['prepartial'])) ? $options['prepartial'] : false,
             'helperresolver' => (isset($options['helperresolver']) && is_callable($options['helperresolver'])) ? $options['helperresolver'] : false,
             'partialresolver' => (isset($options['partialresolver']) && is_callable($options['partialresolver'])) ? $options['partialresolver'] : false,
-            'runtime' => isset($options['runtime']) ? $options['runtime'] : '\\LightnCandy\\Runtime',
+            'runtime' => $options['runtime'] ?? \LightnCandy\Runtime::class,
             'runtimealias' => 'LR',
-            'safestring' => '\\LightnCandy\\SafeString',
-            'safestringalias' => isset($options['safestring']) ? $options['safestring'] : 'LS',
+            'safestring' => \LightnCandy\SafeString::class,
+            'safestringalias' => $options['safestring'] ?? 'LS',
             'rawblock' => false,
             'funcprefix' => uniqid('lcr'),
-        );
+        ];
 
-        $context['ops'] = $context['flags']['echo'] ? array(
+        $context['ops'] = $context['flags']['echo'] ? [
             'seperator' => ',',
             'f_start' => 'echo ',
             'f_end' => ';',
@@ -154,7 +154,7 @@ class Context extends Flags
             'cnd_else' => ';}else{echo ',
             'cnd_end' => ';}echo ',
             'cnd_nend' => ';}',
-        ) : array(
+        ] : [
             'seperator' => '.',
             'f_start' => 'return ',
             'f_end' => ';',
@@ -165,7 +165,7 @@ class Context extends Flags
             'cnd_else' => ' : ',
             'cnd_end' => ').',
             'cnd_nend' => ')',
-        );
+        ];
 
         $context['ops']['enc'] = $context['flags']['hbesc'] ? 'encq' : 'enc';
         $context['ops']['array_check'] = '$inary=is_array($in);';
@@ -193,7 +193,7 @@ class Context extends Flags
      * @expect array('flags' => array('exhlp' => 1), 'helpers' => array('\\LightnCandy\\Runtime::raw' => '\\LightnCandy\\Runtime::raw')) when input array('flags' => array('exhlp' => 1), 'helpers' => array()), array('helpers' => array('\\LightnCandy\\Runtime::raw'))
      * @expect array('flags' => array('exhlp' => 1), 'helpers' => array('test' => '\\LightnCandy\\Runtime::raw')) when input array('flags' => array('exhlp' => 1), 'helpers' => array()), array('helpers' => array('test' => '\\LightnCandy\\Runtime::raw'))
      */
-    protected static function updateHelperTable(&$context, $options, $tname = 'helpers')
+    protected static function updateHelperTable(array &$context, array $options, $tname = 'helpers'): array
     {
         if (isset($options[$tname]) && is_array($options[$tname])) {
             foreach ($options[$tname] as $name => $func) {
@@ -223,7 +223,7 @@ class Context extends Flags
      * @param array<string,array|string|integer> $context master context
      * @param array<string,array|string|integer> $tmp another context will be overwrited into master context
      */
-    public static function merge(&$context, $tmp)
+    public static function merge(array &$context, array $tmp): void
     {
         $context['error'] = $tmp['error'];
         $context['helpers'] = $tmp['helpers'];

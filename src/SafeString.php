@@ -30,12 +30,12 @@ class SafeString extends Encoder
 
     private $string;
 
-    public static $jsContext = array(
-        'flags' => array(
+    public static $jsContext = [
+        'flags' => [
             'jstrue' => 1,
             'jsobj' => 1,
-        )
-    );
+        ]
+    ];
 
     /**
      * Constructor
@@ -48,7 +48,7 @@ class SafeString extends Encoder
         $this->string = $escape ? (($escape === 'encq') ? static::encq(static::$jsContext, $str) : static::enc(static::$jsContext, $str)) : $str;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->string;
     }
@@ -64,7 +64,7 @@ class SafeString extends Encoder
      * @expect 'abc{{!}}cde' when input 'abc{{!}}cde'
      * @expect 'abc{{! }}cde' when input 'abc{{!----}}cde'
      */
-    public static function stripExtendedComments($template)
+    public static function stripExtendedComments($template): ?string
     {
         return preg_replace(static::EXTENDED_COMMENT_SEARCH, '{{! }}', $template);
     }
@@ -80,7 +80,7 @@ class SafeString extends Encoder
      * @expect 'a\\\\bc' when input 'a\bc'
      * @expect 'a\\\'bc' when input 'a\'bc'
      */
-    public static function escapeTemplate($template)
+    public static function escapeTemplate($template): string
     {
         return addcslashes(addcslashes($template, '\\'), "'");
     }

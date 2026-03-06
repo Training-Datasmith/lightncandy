@@ -38,7 +38,7 @@ class Parser extends Token
      * @return integer Return partial block id
      *
      */
-    public static function getPartialBlock(&$vars)
+    public static function getPartialBlock(array &$vars)
     {
         if (isset($vars[static::PARTIALBLOCK])) {
             $id = $vars[static::PARTIALBLOCK];
@@ -56,7 +56,7 @@ class Parser extends Token
      * @return array<string>|null Return list of block params or null
      *
      */
-    public static function getBlockParams(&$vars)
+    public static function getBlockParams(array &$vars)
     {
         if (isset($vars[static::BLOCKPARAM])) {
             $list = $vars[static::BLOCKPARAM];
@@ -75,9 +75,9 @@ class Parser extends Token
      * @return array<integer|string> Return variable name array
      *
      */
-    protected static function getLiteral($name, $asis, $quote = false)
+    protected static function getLiteral($name, $asis, $quote = false): array
     {
-        return $asis ? array($name) : array(static::LITERAL, $quote ? "'$name'" : $name);
+        return $asis ? [$name] : [static::LITERAL, $quote ? "'$name'" : $name];
     }
 
     /**
@@ -106,7 +106,7 @@ class Parser extends Token
      * @expect array(\LightnCandy\Parser::LITERAL, '123') when input '123', array('flags' => array('strpar' => 0, 'advar' => 1, 'this' => 0, 'parent' => 1), 'usedFeature' => array('parent' => 0)), 1
      * @expect array(\LightnCandy\Parser::LITERAL, 'null') when input 'null', array('flags' => array('strpar' => 0, 'advar' => 1, 'this' => 0, 'parent' => 1), 'usedFeature' => array('parent' => 0)), 1
      */
-    protected static function getExpression($v, &$context, $pos)
+    protected static function getExpression($v, array &$context, $pos)
     {
         $asis = ($pos === 0);
 
@@ -130,7 +130,7 @@ class Parser extends Token
             return static::getLiteral($v, $asis);
         }
 
-        $ret = array();
+        $ret = [];
         $levels = 0;
 
         // handle ..
@@ -139,7 +139,7 @@ class Parser extends Token
         }
 
         // Trace to parent for ../ N times
-        $v = preg_replace_callback('/\\.\\.\\//', function () use (&$levels) {
+        $v = preg_replace_callback('/\\.\\.\\//', function () use (&$levels): string {
             $levels++;
             return '';
         }, trim($v));
@@ -180,7 +180,7 @@ class Parser extends Token
         }
 
         if ($strp) {
-            return array(static::LITERAL, "'" . implode('.', $ret) . "'");
+            return [static::LITERAL, "'" . implode('.', $ret) . "'"];
         }
 
         if (($scoped > 0) && ($levels === 0) && (count($ret) > 0)) {
@@ -228,7 +228,7 @@ class Parser extends Token
      * @expect array(false, array(array('foo'))) when input array(0,0,0,0,0,0,'>','[foo] '), array('flags' => array('strpar' => 0, 'advar' => 1, 'this' => 1, 'namev' => 1, 'noesc' => 0, 'exhlp' => 0, 'lambda' => 0), 'usedFeature' => array('subexp' => 0), 'ops' => array('seperator' => 0), 'rawblock' => false)
      * @expect array(false, array(array('foo'))) when input array(0,0,0,0,0,0,'>','\\\'foo\\\''), array('flags' => array('strpar' => 0, 'advar' => 1, 'this' => 1, 'namev' => 1, 'noesc' => 0, 'exhlp' => 0, 'lambda' => 0), 'usedFeature' => array('subexp' => 0), 'ops' => array('seperator' => 0), 'rawblock' => false)
      */
-    public static function parse(&$token, &$context)
+    public static function parse(array &$token, array &$context): array
     {
         $vars = static::analyze($token[static::POS_INNERTAG], $context);
         if ($token[static::POS_OP] === '>') {
@@ -247,7 +247,7 @@ class Parser extends Token
             }
         }
 
-        return array(($token[static::POS_BEGINRAW] === '{') || ($token[static::POS_OP] === '&') || $context['flags']['noesc'] || $context['rawblock'], $avars);
+        return [($token[static::POS_BEGINRAW] === '{') || ($token[static::POS_OP] === '&') || $context['flags']['noesc'] || $context['rawblock'], $avars];
     }
 
     /**
@@ -265,12 +265,12 @@ class Parser extends Token
      * @expect array('foo') when input array("\\'foo\\'")
      * @expect array('foo') when input array(0, 'foo'), 1
      */
-    public static function getPartialName(&$vars, $pos = 0)
+    public static function getPartialName(array &$vars, $pos = 0)
     {
         if (!isset($vars[$pos])) {
             return;
         }
-        return preg_match(SafeString::IS_SUBEXP_SEARCH, $vars[$pos]) ? null : array(preg_replace('/^("(.+)")|(\\[(.+)\\])|(\\\\\'(.+)\\\\\')$/', '$2$4$6', $vars[$pos]));
+        return preg_match(SafeString::IS_SUBEXP_SEARCH, $vars[$pos]) ? null : [preg_replace('/^("(.+)")|(\\[(.+)\\])|(\\\\\'(.+)\\\\\')$/', '$2$4$6', $vars[$pos])];
     }
 
     /**
@@ -283,7 +283,7 @@ class Parser extends Token
      *
      * @expect array(\LightnCandy\Parser::SUBEXP, array(array('a'), array('b')), '(a b)') when input '(a b)', array('usedFeature' => array('subexp' => 0), 'flags' => array('advar' => 0, 'namev' => 0, 'this' => 0, 'exhlp' => 1, 'strpar' => 0))
      */
-    public static function subexpression($expression, &$context)
+    public static function subexpression($expression, array &$context): array
     {
         $context['usedFeature']['subexp']++;
         $vars = static::analyze(substr($expression, 1, -1), $context);
@@ -293,7 +293,7 @@ class Parser extends Token
                 $context['error'][] = "Can not find custom helper function defination {$avars[0][0]}() !";
             }
         }
-        return array(static::SUBEXP, $avars, $expression);
+        return [static::SUBEXP, $avars, $expression];
     }
 
     /**
@@ -310,7 +310,7 @@ class Parser extends Token
      * @expect false when input array(\LightnCandy\Parser::SUBEXP, 0, '', 0)
      * @expect true when input array(\LightnCandy\Parser::SUBEXP, 0, '')
      */
-    public static function isSubExp($var)
+    public static function isSubExp($var): bool
     {
         return is_array($var) && (count($var) === 3) && ($var[0] === static::SUBEXP) && is_string($var[2]);
     }
@@ -332,9 +332,9 @@ class Parser extends Token
      * @expect array('fo o' => array(\LightnCandy\Parser::LITERAL, '123')) when input array('[fo o]=123'), array('flags' => array('advar' => 1, 'namev' => 1, 'this' => 0)), 0
      * @expect array('fo o' => array(\LightnCandy\Parser::LITERAL, '\'bar\'')) when input array('[fo o]="bar"'), array('flags' => array('advar' => 1, 'namev' => 1, 'this' => 0)), 0
      */
-    protected static function advancedVariable($vars, &$context, $token)
+    protected static function advancedVariable($vars, array &$context, $token): array
     {
-        $ret = array();
+        $ret = [];
         $i = 0;
         foreach ($vars as $idx => $var) {
             // handle (...)
@@ -355,7 +355,7 @@ class Parser extends Token
                     if (!$context['flags']['advar'] && $m[3]) {
                         $context['error'][] = "Wrong argument name as '[$m[3]]' in $token ! You should fix your template or compile with LightnCandy::FLAG_ADVARNAME flag.";
                     }
-                    $idx = $m[3] ? $m[3] : $m[4];
+                    $idx = $m[3] ?: $m[4];
                     $var = $m[5];
                     // handle foo=(...)
                     if (preg_match(SafeString::IS_SUBEXP_SEARCH, $var)) {
@@ -413,37 +413,37 @@ class Parser extends Token
     {
         // begin with '(' without ending ')'
         if (preg_match('/^\([^\)]*$/', $string)) {
-            return array(')', 1);
+            return [')', 1];
         }
 
         // begin with '"' without ending '"'
         if (preg_match('/^"[^"]*$/', $string)) {
-            return array('"', 0);
+            return ['"', 0];
         }
 
         // begin with \' without ending '
         if (preg_match('/^\\\\\'[^\']*$/', $string)) {
-            return array('\'', 0);
+            return ['\'', 0];
         }
 
         // '="' exists without ending '"'
         if (preg_match('/^[^"]*="[^"]*$/', $string)) {
-            return array('"', 0);
+            return ['"', 0];
         }
 
         // '[' exists without ending ']'
         if (preg_match('/^([^"\'].+)?\\[[^\\]]*$/', $string)) {
-            return array(']', 0);
+            return [']', 0];
         }
 
         // =\' exists without ending '
         if (preg_match('/^[^\']*=\\\\\'[^\']*$/', $string)) {
-            return array('\'', 0);
+            return ['\'', 0];
         }
 
         // continue to next match when =( exists without ending )
         if (preg_match('/.+(\(+)[^\)]*$/', $string, $m)) {
-            return array(')', strlen($m[1]));
+            return [')', strlen($m[1])];
         }
     }
 
@@ -466,12 +466,12 @@ class Parser extends Token
      * @expect array('[fo o]="1 2 3"') when input '[fo o]="1 2 3"', array('flags' => array('advar' => 1))
      * @expect array('foo', 'a=(foo a=(foo a="ok"))') when input 'foo a=(foo a=(foo a="ok"))', array('flags' => array('advar' => 1))
      */
-    protected static function analyze($token, &$context)
+    protected static function analyze($token, array &$context)
     {
         $count = preg_match_all('/(\s*)([^\s]+)/', $token, $matchedall);
         // Parse arguments and deal with "..." or [...] or (...) or \'...\' or |...|
         if (($count > 0) && $context['flags']['advar']) {
-            $vars = array();
+            $vars = [];
             $prev = '';
             $expect = 0;
             $quote = 0;
@@ -513,11 +513,14 @@ class Parser extends Token
                         $prev = '';
                         $expect = 0;
                         continue;
-                    } elseif (($expect == ']') && (strpos($t, $expect) !== false)) {
+                    }
+                    // end an argument when end with expected charactor
+                    if (($expect == ']') && (strpos($t, $expect) !== false)) {
                         $t = $prev;
                         $detected = static::detectQuote($t);
                         $expect = 0;
-                    } else {
+                    }
+                    else {
                         continue;
                     }
                 }

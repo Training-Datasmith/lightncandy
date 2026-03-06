@@ -36,7 +36,7 @@ class Expression
      * @expect 'false' when input 0
      * @expect 'false' when input -1
      */
-    public static function boolString($v)
+    public static function boolString($v): string
     {
         return ($v > 0) ? 'true' : 'false';
     }
@@ -52,9 +52,9 @@ class Expression
      * @expect "'a'" when input array('a')
      * @expect "'a','b','c'" when input array('a', 'b', 'c')
      */
-    public static function listString($list)
+    public static function listString($list): string
     {
-        return implode(',', (array_map(function ($v) {
+        return implode(',', (array_map(function (string $v): string {
             return "'$v'";
         }, $list)));
     }
@@ -70,9 +70,9 @@ class Expression
      * @expect "['a']" when input array('a')
      * @expect "['a']['b']['c']" when input array('a', 'b', 'c')
      */
-    public static function arrayString($list)
+    public static function arrayString($list): string
     {
-        return implode('', (array_map(function ($v) {
+        return implode('', (array_map(function (string $v): string {
             return "['$v']";
         }, $list)));
     }
@@ -88,7 +88,7 @@ class Expression
      * @expect array(0, false, array('foo')) when input array('flags' => array('spvar' => 0)), array(0, 'foo')
      * @expect array(1, false, array('foo')) when input array('flags' => array('spvar' => 0)), array(1, 'foo')
      */
-    public static function analyze($context, $var)
+    public static function analyze(array $context, array $var): array
     {
         $levels = 0;
         $spvar = false;
@@ -110,7 +110,7 @@ class Expression
             }
         }
 
-        return array($levels, $spvar, $var);
+        return [$levels, $spvar, $var];
     }
 
     /**
@@ -130,9 +130,9 @@ class Expression
      * @expect '../../[a].[b]' when input 2, false, array('a', 'b')
      * @expect '../[a\'b]' when input 1, false, array('a\'b')
      */
-    public static function toString($levels, $spvar, $var)
+    public static function toString($levels, $spvar, $var): string
     {
-        return ($spvar ? '@' : '') . str_repeat('../', $levels) . ((is_array($var) && count($var)) ? implode('.', array_map(function ($v) {
+        return ($spvar ? '@' : '') . str_repeat('../', $levels) . ((is_array($var) && count($var)) ? implode('.', array_map(function ($v): string {
             return ($v === null) ? 'this' : "[$v]";
         }, $var)) : 'this');
     }

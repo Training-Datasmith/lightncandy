@@ -35,7 +35,7 @@ class LightnCandy extends Flags
      *
      * @return string|false Compiled PHP code when successed. If error happened and compile failed, return false.
      */
-    public static function compile($template, $options = array('flags' => self::FLAG_BESTPERFORMANCE))
+    public static function compile($template, $options = ['flags' => self::FLAG_BESTPERFORMANCE])
     {
         $context = Context::create($options);
 
@@ -65,7 +65,7 @@ class LightnCandy extends Flags
      *
      * @expect false when input '{{"}}', array('flags' => LightnCandy::FLAG_HANDLEBARS)
      */
-    public static function compilePartial($template, $options = array('flags' => self::FLAG_BESTPERFORMANCE))
+    public static function compilePartial($template, $options = ['flags' => self::FLAG_BESTPERFORMANCE])
     {
         $context = Context::create($options);
 
@@ -96,7 +96,7 @@ class LightnCandy extends Flags
      * @expect false when input array('error' => array())
      * @expect true when input array('error' => array('some error'), 'flags' => array('errorlog' => 0, 'exception' => 0))
      */
-    protected static function handleError(&$context)
+    protected static function handleError(array &$context): bool
     {
         static::$lastContext = $context;
 
