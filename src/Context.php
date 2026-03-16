@@ -142,7 +142,7 @@ class Context extends Flags
             'safestring' => \LightnCandy\SafeString::class,
             'safestringalias' => $options['safestring'] ?? 'LS',
             'rawblock' => false,
-            'funcprefix' => uniqid('lcr'),
+            'funcprefix' => 'lcr' . bin2hex(random_bytes(8)),
         ];
 
         $context['ops'] = $context['flags']['echo'] ? [

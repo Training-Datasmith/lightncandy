@@ -24,6 +24,7 @@ namespace LightnCandy;
 /**
  * LightnCandy class for Object property access on a string.
  */
+#[AllowDynamicProperties]
 class StringObject
 {
     protected $string;
@@ -80,7 +81,7 @@ class Runtime extends Encoder
             switch ($f) {
                 case 'sec':
                 case 'wi':
-                    if ($r == '') {
+                    if ($r === '') {
                         if ($ansi) {
                             $r = "\033[0;33mSKIPPED\033[0m";
                         }
@@ -355,7 +356,7 @@ class Runtime extends Encoder
      * @expect '268' when input array('scopes' => array(), 'flags' => array('spvar' => 1, 'mustlam' => 0, 'lambda' => 0), 'sp_vars'=>array('root' => 0)), array(1,3,4), null, 0, false, function ($c, $i) {return $i * 2;}
      * @expect '038' when input array('scopes' => array(), 'flags' => array('spvar' => 1, 'mustlam' => 0, 'lambda' => 0), 'sp_vars'=>array('root' => 0)), array(1,3,'a'=>4), null, 0, true, function ($c, $i) {return $i * $c['sp_vars']['index'];}
      */
-    public static function sec(array $cx, $v, array $bp, $in, $each, $cb, $else = null)
+    public static function sec(array $cx, $v, ?array $bp, $in, $each, $cb, $else = null)
     {
         $push = ($in !== $v) || $each;
 
@@ -483,7 +484,7 @@ class Runtime extends Encoder
      * @expect '{"a":"b"}' when input array(), array('a'=>'b'), null, array('a'=>'c'), function ($c, $i) {return json_encode($i);}
      * @expect '-b=' when input array(), 'b', null, array('a'=>'b'), function ($c, $i) {return "-$i=";}
      */
-    public static function wi(array $cx, $v, array $bp, $in, $cb, $else = null)
+    public static function wi(array $cx, $v, ?array $bp, $in, $cb, $else = null)
     {
         if (isset($bp[0])) {
             $v = static::m($cx, $v, [$bp[0] => $v]);
@@ -704,7 +705,7 @@ class Runtime extends Encoder
     {
         $args = $vars[0];
         $args[] = &$options;
-        $r = true;
+        $r = '';
 
         try {
             $r = call_user_func_array($cx['helpers'][$ch], $args);

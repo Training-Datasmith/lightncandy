@@ -159,7 +159,7 @@ VAREND
         static::addUsageCount($context, 'runtime', $name);
 
         if ($context['flags']['debug'] && ($name != 'miss')) {
-            $dbg = "'$tag', '$name', ";
+            $dbg = "'" . addcslashes($tag, "'\\") . "', '$name', ";
             $name = 'debug';
             static::addUsageCount($context, 'runtime', 'debug');
         } else {
@@ -226,7 +226,7 @@ VAREND
      *
      * @return array<string> variable names
      */
-    protected static function getVariableNameOrSubExpression(&$context, array $var)
+    protected static function getVariableNameOrSubExpression(&$context, ?array $var)
     {
         return Parser::isSubExp($var) ? static::compileSubExpression($context, $var[1]) : static::getVariableName($context, $var);
     }
@@ -394,7 +394,7 @@ VAREND
             if (Parser::isSubExp($p)) {
                 [$p] = static::compileSubExpression($context, $p[1]);
             } else {
-                $p = "'$p[0]'";
+                $p = "'" . addcslashes($p[0], "'\\") . "'";
             }
             $sp = $context['tokens']['partialind'] ? ", '{$context['tokens']['partialind']}'" : '';
             return $context['ops']['seperator'] . static::getFuncName($context, 'p', $tag) . "\$cx, $p, $v[0],$pid$sp){$context['ops']['seperator']}";
@@ -410,7 +410,7 @@ VAREND
      *
      * @return string Return compiled code segment for the partial
      */
-    public static function inline(&$context, $vars): string
+    public static function inline(&$context, $vars): bool|string
     {
         Parser::getBlockParams($vars);
         [$code] = array_shift($vars);
@@ -420,7 +420,7 @@ VAREND
         }
         $v = static::getVariableNames($context, $vars);
         $tag = ">*inline $p[0]" .implode(' ', $v[1]);
-        return $context['ops']['seperator'] . static::getFuncName($context, 'in', $tag) . "\$cx, '{$p[0]}', $code){$context['ops']['seperator']}";
+        return $context['ops']['seperator'] . static::getFuncName($context, 'in', $tag) . "\$cx, '" . addcslashes($p[0], "'\\") . "', $code){$context['ops']['seperator']}";
     }
 
     /**
@@ -454,7 +454,7 @@ VAREND
         static::addUsageCount($context, 'helpers', $ch[0]);
         $v = static::getVariableNames($context, $vars, $bp);
 
-        return $context['ops']['seperator'] . static::getFuncName($context, 'hbbch', ($inverted ? '^' : '#') . implode(' ', $v[1])) . "\$cx, '$ch[0]', {$v[0]}, \$in, $inverted, function(\$cx, \$in) {{$context['ops']['array_check']}{$context['ops']['f_start']}";
+        return $context['ops']['seperator'] . static::getFuncName($context, 'hbbch', ($inverted ? '^' : '#') . implode(' ', $v[1])) . "\$cx, '" . addcslashes($ch[0], "'\\") . "', {$v[0]}, \$in, $inverted, function(\$cx, \$in) {{$context['ops']['array_check']}{$context['ops']['f_start']}";
     }
 
     /**
@@ -539,7 +539,7 @@ VAREND
      *
      * @return string|null Return compiled code segment for the token
      */
-    protected static function section(&$context, $vars, $isEach = false): string
+    protected static function section(&$context, $vars, $isEach = false): bool|string
     {
         $bs = 'null';
         $be = '';
@@ -567,7 +567,7 @@ VAREND
      *
      * @return string|null Return compiled code segment for the token
      */
-    protected static function with(&$context, $vars): string
+    protected static function with(&$context, $vars): bool|string
     {
         $v = isset($vars[1]) ? static::getVariableNameOrSubExpression($context, $vars[1]) : [null, []];
         $bp = Parser::getBlockParams($vars);
@@ -609,7 +609,7 @@ VAREND
         static::addUsageCount($context, 'helpers', $ch[0]);
         $sep = $nosep ? '' : $context['ops']['seperator'];
 
-        return $sep . static::getFuncName($context, 'hbch', "$ch[0] " . implode(' ', $v[1])) . "\$cx, '$ch[0]', {$v[0]}, '$fn', \$in)$sep";
+        return $sep . static::getFuncName($context, 'hbch', "$ch[0] " . implode(' ', $v[1])) . "\$cx, '" . addcslashes($ch[0], "'\\") . "', {$v[0]}, '$fn', \$in)$sep";
     }
 
     /**

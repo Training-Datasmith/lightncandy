@@ -62,10 +62,10 @@ class Exporter
                 continue;
             }
             if ((is_object($func) && ($func instanceof \Closure)) || ($context['flags']['exhlp'] == 0)) {
-                $ret .= ("            '$name' => " . static::closure($context, $func) . ",\n");
+                $ret .= ("            '" . addcslashes($name, "'\\") . "' => " . static::closure($context, $func) . ",\n");
                 continue;
             }
-            $ret .= "            '$name' => '$func',\n";
+            $ret .= "            '" . addcslashes($name, "'\\") . "' => '" . addcslashes((string) $func, "'\\") . "',\n";
         }
 
         return "array($ret)";
@@ -127,6 +127,9 @@ class Exporter
     {
         $fname = $refobj->getFileName();
         $lines = file_get_contents($fname);
+        if ($lines === false) {
+            throw new \RuntimeException("Cannot read file: $fname");
+        }
         $file = new \SplFileObject($fname);
 
         $start = $refobj->getStartLine() - 2;
@@ -158,9 +161,13 @@ class Exporter
     {
         $class = new \ReflectionClass($context['safestring']);
 
+        $alias = $context['safestringalias'];
+        if (!preg_match('/^[a-zA-Z_]\w*$/', $alias)) {
+            throw new \InvalidArgumentException("Invalid safestringalias: $alias");
+        }
         return array_reduce(static::getClassMethods($context, $class), function (string $in, $cur): string {
             return $in . $cur[2];
-        }, 'if (!class_exists("' . addslashes($context['safestringalias']) . "\")) {\nclass {$context['safestringalias']} {\n" . static::getClassStatics($class)) . "}\n}\n";
+        }, 'if (!class_exists("' . addslashes($alias) . "\")) {\nclass $alias {\n" . static::getClassStatics($class)) . "}\n}\n";
     }
 
     /**
@@ -228,7 +235,7 @@ class Exporter
         $constants = $class->getConstants();
         $ret = " array(\n";
         foreach ($constants as $name => $value) {
-            $ret .= "            '$name' => ".  (is_string($value) ? "'$value'" : $value) . ",\n";
+            $ret .= "            '$name' => " . var_export($value, true) . ",\n";
         }
         return $ret . '        )';
     }

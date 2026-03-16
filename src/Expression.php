@@ -57,7 +57,7 @@ class Expression
     public static function listString($list): string
     {
         return implode(',', (array_map(function (string $v): string {
-            return "'$v'";
+            return "'" . addcslashes($v, "'\\") . "'";
         }, $list)));
     }
 
@@ -75,7 +75,7 @@ class Expression
     public static function arrayString($list): string
     {
         return implode('', (array_map(function (string $v): string {
-            return "['$v']";
+            return "['" . addcslashes($v, "'\\") . "']";
         }, $list)));
     }
 

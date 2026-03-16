@@ -34,7 +34,7 @@ class Validator
      */
     public static function verify(array &$context, $template): void
     {
-        $template = SafeString::stripExtendedComments($template);
+        $template = SafeString::stripExtendedComments($template) ?? $template;
         $context['level'] = 0;
         Parser::setDelimiter($context);
 
@@ -381,7 +381,7 @@ class Validator
      *
      * @return boolean Return true always
      */
-    protected static function section(array &$context, array $vars, $isEach = false): bool
+    protected static function section(array &$context, array $vars, $isEach = false): bool|string
     {
         if ($isEach) {
             static::builtin($context, $vars);
@@ -402,7 +402,7 @@ class Validator
      *
      * @return boolean Return true always
      */
-    protected static function with(&$context, $vars): bool
+    protected static function with(&$context, $vars): bool|string
     {
         static::builtin($context, $vars);
         return true;
@@ -416,7 +416,7 @@ class Validator
      *
      * @return boolean Return true always
      */
-    protected static function unless(&$context, $vars): bool
+    protected static function unless(&$context, $vars): bool|string
     {
         static::builtin($context, $vars);
         return true;
@@ -430,7 +430,7 @@ class Validator
      *
      * @return boolean Return true always
      */
-    protected static function doIf(&$context, $vars): bool
+    protected static function doIf(&$context, $vars): bool|string
     {
         static::builtin($context, $vars);
         return true;
@@ -549,8 +549,7 @@ class Validator
      */
     protected static function rawblock(array &$token, array &$context)
     {
-        $inner = $token[Token::POS_INNERTAG];
-        trim($inner);
+        $inner = trim($token[Token::POS_INNERTAG]);
 
         // skip parse when inside raw block
         if ($context['rawblock'] && !(($token[Token::POS_BEGINRAW] === '{{') && ($token[Token::POS_OP] === '/') && ($context['rawblock'] === $inner))) {
@@ -816,7 +815,7 @@ class Validator
      *
      * @return boolean|null Return true when this token is block custom helper
      */
-    protected static function isBlockHelper($context, array $vars)
+    protected static function isBlockHelper(array &$context, array $vars)
     {
         if (!isset($vars[0][0])) {
             return;
@@ -837,7 +836,7 @@ class Validator
      *
      * @return boolean Return true always
      */
-    protected static function inline(array &$context, array $vars): bool
+    protected static function inline(array &$context, array $vars): bool|string
     {
         if (!$context['flags']['runpart']) {
             $context['error'][] = "Do not support {{#*{$context['currentToken'][Token::POS_INNERTAG]}}}, you should do compile with LightnCandy::FLAG_RUNTIMEPARTIAL flag";
