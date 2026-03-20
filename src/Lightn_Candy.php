@@ -101,9 +101,12 @@ class Lightn_Candy extends Flags
     /**
      * Get last compiler context.
      *
-     * @return array<string,array|string|integer> Context data
+     * Returns the full context array from the most recent compile() or compile_partial() call,
+     * useful for post-mortem debugging of compilation errors or warnings.
+     *
+     * @return array<string, array|string|integer>|null Context data from last compilation, or null if never compiled.
      */
-    public static function get_context()
+    public static function get_context(): ?array
     {
         return static::$last_context;
     }

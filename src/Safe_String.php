@@ -39,6 +39,11 @@ class Safe_String extends Encoder
     {
         $this->string = $escape ? $escape === 'encq' ? static::encq(static::$js_context, $str) : static::enc(static::$js_context, $str) : $str;
     }
+    /**
+     * Returns the safely-encoded string value.
+     *
+     * @return string The HTML-encoded (or raw, if $escape was false) string.
+     */
     public function __toString(): string
     {
         return $this->string;
@@ -54,7 +59,7 @@ class Safe_String extends Encoder
      * @expect 'abc{{!}}cde' when input 'abc{{!}}cde'
      * @expect 'abc{{! }}cde' when input 'abc{{!----}}cde'
      */
-    public static function strip_extended_comments($template): ?string
+    public static function strip_extended_comments(string $template): ?string
     {
         return preg_replace(static::EXTENDED_COMMENT_SEARCH, '{{! }}', $template);
     }
