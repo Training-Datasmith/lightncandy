@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 /*
 
 MIT License
@@ -11,15 +11,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Origin: https://github.com/zordius/lightncandy
 */
-
 /**
  * file to handle LightnCandy token
  *
  * @package    LightnCandy
  * @author     Zordius <zordius@gmail.com>
  */
-
-namespace LightnCandy;
+namespace Lightn_Candy;
 
 /**
  * LightnCandy Token handler
@@ -27,8 +25,7 @@ namespace LightnCandy;
 class Token
 {
     // RegExps
-    public const VARNAME_SEARCH = '/(\\[[^\\]]+\\]|[^\\[\\]\\.]+)/';
-
+    public const VARNAME_SEARCH = '/(\[[^\]]+\]|[^\[\]\.]+)/';
     // Positions of matched token
     public const POS_LOTHER = 1;
     public const POS_LSPACE = 2;
@@ -43,7 +40,6 @@ class Token
     public const POS_RSPACE = 11;
     public const POS_ROTHER = 12;
     public const POS_BACKFILL = 13;
-
     /**
      * Setup delimiter by default or provided string
      *
@@ -51,7 +47,7 @@ class Token
      * @param string|null $left left string of a token
      * @param string|null $right right string of a token
      */
-    public static function setDelimiter(array &$context, $left = null, $right = null): void
+    public static function set_delimiter(array &$context, $left = null, $right = null): void
     {
         if ($left === null) {
             $left = $context['delimiters'][0];
@@ -59,21 +55,18 @@ class Token
         if ($right === null) {
             $right = $context['delimiters'][1];
         }
-        if (preg_match('/=/', "$left$right")) {
-            $context['error'][] = "Can not set delimiter contains '=' , you try to set delimiter as '$left' and '$right'.";
+        if (preg_match('/=/', "{$left}{$right}")) {
+            $context['error'][] = "Can not set delimiter contains '=' , you try to set delimiter as '{$left}' and '{$right}'.";
             return;
         }
-
         $context['tokens']['startchar'] = substr($left, 0, 1);
         $context['tokens']['left'] = $left;
         $context['tokens']['right'] = $right;
         $rawcount = $context['rawblock'] ? '{2}' : ($context['flags']['rawblock'] ? '{0,2}' : '?');
         $left = preg_quote($left);
         $right = preg_quote($right);
-
-        $context['tokens']['search'] = "/^(.*?)(\\s*)($left)(~?)(\\{{$rawcount})\\s*([\\^#\\/!&>\\*]{0,2})(.*?)\\s*(\\}{$rawcount})(~?)($right)(\\s*)(.*)\$/s";
+        $context['tokens']['search'] = "/^(.*?)(\\s*)({$left})(~?)(\\{{$rawcount})\\s*([\\^#\\/!&>\\*]{0,2})(.*?)\\s*(\\}{$rawcount})(~?)({$right})(\\s*)(.*)\$/s";
     }
-
     /**
      * return token string
      *
@@ -86,7 +79,7 @@ class Token
      * @expect 'cd' when input array(0, 'a', 'b', 'c', 'd', 'e', 'f')
      * @expect 'qd' when input array(0, 'a', 'b', 'c', 'd', 'e', 'f'), array(3 => 'q')
      */
-    public static function toString($token, $merge = null): string
+    public static function to_string($token, $merge = null): string
     {
         if (is_array($merge)) {
             $token = array_replace($token, $merge);

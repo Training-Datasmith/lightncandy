@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 /*
 
 MIT License
@@ -11,35 +11,30 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Origin: https://github.com/zordius/lightncandy
 */
-
 /**
  * file to support LightnCandy compiled PHP runtime
  *
  * @package    LightnCandy
  * @author     Zordius <zordius@gmail.com>
  */
-
-namespace LightnCandy;
+namespace Lightn_Candy;
 
 /**
  * LightnCandy class for Object property access on a string.
  */
-#[AllowDynamicProperties]
-class StringObject
+#[Allow_Dynamic_Properties]
+class String_Object
 {
     protected $string;
-
     public function __construct($string)
     {
         $this->string = $string;
     }
-
     public function __toString(): string
     {
         return strval($this->string);
     }
 }
-
 /**
  * LightnCandy class for compiled PHP runtime.
  */
@@ -50,7 +45,6 @@ class Runtime extends Encoder
     public const DEBUG_TAGS = 4;
     public const DEBUG_TAGS_ANSI = 12;
     public const DEBUG_TAGS_HTML = 20;
-
     /**
      * Output debug info.
      *
@@ -66,38 +60,34 @@ class Runtime extends Encoder
         // Build array of reference for call_user_func_array
         $P = func_get_args();
         $params = [];
-        for ($i = 2;$i < count($P);$i++) {
-            $params[] = &$P[$i];
+        for ($i = 2; $i < count($P); $i++) {
+            $params[] =& $P[$i];
         }
-        $r = call_user_func_array(($cx['funcs'][$f] ?? "{$cx['runtime']}::$f"), $params);
-
+        $r = call_user_func_array($cx['funcs'][$f] ?? "{$cx['runtime']}::{$f}", $params);
         if ($cx['flags']['debug'] & static::DEBUG_TAGS) {
-            $ansi = $cx['flags']['debug'] & (static::DEBUG_TAGS_ANSI - static::DEBUG_TAGS);
-            $html = $cx['flags']['debug'] & (static::DEBUG_TAGS_HTML - static::DEBUG_TAGS);
-            $cs = ($html ? (($r !== '') ? '<!!--OK((-->' : '<!--MISSED((-->') : '')
-                  . ($ansi ? (($r !== '') ? "\033[0;32m" : "\033[0;31m") : '');
-            $ce = ($html ? '<!--))-->' : '')
-                  . ($ansi ? "\033[0m" : '');
+            $ansi = $cx['flags']['debug'] & static::DEBUG_TAGS_ANSI - static::DEBUG_TAGS;
+            $html = $cx['flags']['debug'] & static::DEBUG_TAGS_HTML - static::DEBUG_TAGS;
+            $cs = ($html ? $r !== '' ? '<!!--OK((-->' : '<!--MISSED((-->' : '') . ($ansi ? $r !== '' ? "\x1b[0;32m" : "\x1b[0;31m" : '');
+            $ce = ($html ? '<!--))-->' : '') . ($ansi ? "\x1b[0m" : '');
             switch ($f) {
                 case 'sec':
                 case 'wi':
                     if ($r === '') {
                         if ($ansi) {
-                            $r = "\033[0;33mSKIPPED\033[0m";
+                            $r = "\x1b[0;33mSKIPPED\x1b[0m";
                         }
                         if ($html) {
                             $r = '<!--SKIPPED-->';
                         }
                     }
-                    return "$cs{{#{$v}}}$ce{$r}$cs{{/{$v}}}$ce";
+                    return "{$cs}{{#{$v}}}{$ce}{$r}{$cs}{{/{$v}}}{$ce}";
                 default:
-                    return "$cs{{{$v}}}$ce";
+                    return "{$cs}{{{$v}}}{$ce}";
             }
         } else {
             return $r;
         }
     }
-
     /**
      * Handle error by error_log or throw exception.
      *
@@ -116,7 +106,6 @@ class Runtime extends Encoder
             throw new \Exception($err);
         }
     }
-
     /**
      * Handle missing data error.
      *
@@ -125,9 +114,8 @@ class Runtime extends Encoder
      */
     public static function miss($cx, $v): void
     {
-        static::err($cx, "Runtime: $v does not exist");
+        static::err($cx, "Runtime: {$v} does not exist");
     }
-
     /**
      * For {{log}} .
      *
@@ -139,7 +127,6 @@ class Runtime extends Encoder
         error_log(var_export($v[0], true));
         return '';
     }
-
     /**
      * Resursive lookup variable and helpers. This is slow and will only be used for instance property or method detection or lambdas.
      *
@@ -168,18 +155,18 @@ class Runtime extends Encoder
                         $v = $v[$name];
                         continue;
                     }
-                    if (($i === $plen - 1) && ($name === 'length')) {
+                    if ($i === $plen - 1 && $name === 'length') {
                         return count($v);
                     }
                 }
                 if (is_object($v)) {
-                    if ($cx['flags']['prop'] && !($v instanceof \Closure) && isset($v->$name)) {
-                        $v = $v->$name;
+                    if ($cx['flags']['prop'] && !$v instanceof \Closure && isset($v->{$name})) {
+                        $v = $v->{$name};
                         continue;
                     }
                     if ($cx['flags']['method'] && is_callable([$v, $name])) {
                         try {
-                            $v = $v->$name();
+                            $v = $v->{$name}();
                             continue;
                         } catch (\BadMethodCallException $e) {
                         }
@@ -226,7 +213,6 @@ class Runtime extends Encoder
             static::err($cx, 'Can not find helper or lambda: "' . implode('.', $path) . '" !');
         }
     }
-
     /**
      * For {{#if}} .
      *
@@ -249,9 +235,8 @@ class Runtime extends Encoder
      */
     public static function ifvar($cx, $v, $zero): bool
     {
-        return ($v !== null) && ($v !== false) && ($zero || ($v !== 0) && ($v !== 0.0)) && ($v !== '') && (is_array($v) ? (count($v) > 0) : true);
+        return $v !== null && $v !== false && ($zero || $v !== 0 && $v !== 0.0) && $v !== '' && (is_array($v) ? count($v) > 0 : true);
     }
-
     /**
      * For {{^var}} .
      *
@@ -269,9 +254,8 @@ class Runtime extends Encoder
      */
     public static function isec($cx, $v): bool
     {
-        return ($v === null) || ($v === false) || (is_array($v) && (count($v) === 0));
+        return $v === null || $v === false || is_array($v) && count($v) === 0;
     }
-
     /**
      * For {{var}} .
      *
@@ -288,13 +272,11 @@ class Runtime extends Encoder
     public static function enc($cx, $var): string
     {
         // Use full namespace classname for more specific code export/match in Exporter.php replaceSafeString.
-        if ($var instanceof \LightnCandy\SafeString) {
-            return (string)$var;
+        if ($var instanceof \Lightn_Candy\Safe_String) {
+            return (string) $var;
         }
-
         return htmlspecialchars(static::raw($cx, $var), ENT_QUOTES, 'UTF-8');
     }
-
     /**
      * For {{var}} , do html encode just like handlebars.js .
      *
@@ -311,13 +293,11 @@ class Runtime extends Encoder
     public static function encq($cx, $var): string
     {
         // Use full namespace classname for more specific code export/match in Exporter.php replaceSafeString.
-        if ($var instanceof \LightnCandy\SafeString) {
-            return (string)$var;
+        if ($var instanceof \Lightn_Candy\Safe_String) {
+            return (string) $var;
         }
-
         return str_replace(['=', '`', '&#039;'], ['&#x3D;', '&#x60;', '&#x27;'], htmlspecialchars(static::raw($cx, $var), ENT_QUOTES, 'UTF-8'));
     }
-
     /**
      * For {{#var}} or {{#each}} .
      *
@@ -358,32 +338,28 @@ class Runtime extends Encoder
      */
     public static function sec(array $cx, $v, ?array $bp, $in, $each, $cb, $else = null)
     {
-        $push = ($in !== $v) || $each;
-
-        $isAry = is_array($v) || ($v instanceof \ArrayObject);
-        $isTrav = $v instanceof \Traversable;
+        $push = $in !== $v || $each;
+        $is_ary = is_array($v) || $v instanceof \ArrayObject;
+        $is_trav = $v instanceof \Traversable;
         $loop = $each;
         $keys = null;
         $last = null;
-        $isObj = false;
-
-        if ($isAry && $else !== null && count($v) === 0) {
+        $is_obj = false;
+        if ($is_ary && $else !== null && count($v) === 0) {
             return $else($cx, $in);
         }
-
         // #var, detect input type is object or not
-        if (!$loop && $isAry) {
+        if (!$loop && $is_ary) {
             $keys = array_keys($v);
-            $loop = (count(array_diff_key($v, array_keys($keys))) == 0);
-            $isObj = !$loop;
+            $loop = count(array_diff_key($v, array_keys($keys))) == 0;
+            $is_obj = !$loop;
         }
-
-        if (($loop && $isAry) || $isTrav) {
-            if ($each && !$isTrav) {
+        if ($loop && $is_ary || $is_trav) {
+            if ($each && !$is_trav) {
                 // Detect input type is object or not when never done once
                 if ($keys == null) {
                     $keys = array_keys($v);
-                    $isObj = (count(array_diff_key($v, array_keys($keys))) > 0);
+                    $is_obj = count(array_diff_key($v, array_keys($keys))) > 0;
                 }
             }
             $ret = [];
@@ -394,18 +370,17 @@ class Runtime extends Encoder
             if ($cx['flags']['spvar']) {
                 $old_spvar = $cx['sp_vars'];
                 $cx['sp_vars'] = array_merge(['root' => $old_spvar['root']], $old_spvar, ['_parent' => $old_spvar]);
-                if (!$isTrav) {
+                if (!$is_trav) {
                     $last = count($keys) - 1;
                 }
             }
-
-            $isSparceArray = $isObj && (count(array_filter(array_keys($v), 'is_string')) == 0);
+            $is_sparce_array = $is_obj && count(array_filter(array_keys($v), 'is_string')) == 0;
             foreach ($v as $index => $raw) {
                 if ($cx['flags']['spvar']) {
-                    $cx['sp_vars']['first'] = ($i === 0);
-                    $cx['sp_vars']['last'] = ($i == $last);
+                    $cx['sp_vars']['first'] = $i === 0;
+                    $cx['sp_vars']['last'] = $i == $last;
                     $cx['sp_vars']['key'] = $index;
-                    $cx['sp_vars']['index'] = $isSparceArray ? $index : $i;
+                    $cx['sp_vars']['index'] = $is_sparce_array ? $index : $i;
                     $i++;
                 }
                 if (isset($bp[0])) {
@@ -417,7 +392,7 @@ class Runtime extends Encoder
                 $ret[] = $cb($cx, $raw);
             }
             if ($cx['flags']['spvar']) {
-                if ($isObj) {
+                if ($is_obj) {
                     unset($cx['sp_vars']['key']);
                 } else {
                     unset($cx['sp_vars']['last']);
@@ -437,7 +412,7 @@ class Runtime extends Encoder
             }
             return '';
         }
-        if ($isAry) {
+        if ($is_ary) {
             if ($push) {
                 $cx['scopes'][] = $in;
             }
@@ -447,26 +422,20 @@ class Runtime extends Encoder
             }
             return $ret;
         }
-
         if ($cx['flags']['mustsec']) {
             return $v ? $cb($cx, $in) : '';
         }
-
         if ($v === true) {
             return $cb($cx, $in);
         }
-
-        if (($v !== null) && ($v !== false)) {
+        if ($v !== null && $v !== false) {
             return $cb($cx, $v);
         }
-
         if ($else !== null) {
             return $else($cx, $in);
         }
-
         return '';
     }
-
     /**
      * For {{#with}} .
      *
@@ -489,7 +458,7 @@ class Runtime extends Encoder
         if (isset($bp[0])) {
             $v = static::m($cx, $v, [$bp[0] => $v]);
         }
-        if (($v === false) || ($v === null) || (is_array($v) && (count($v) === 0))) {
+        if ($v === false || $v === null || is_array($v) && count($v) === 0) {
             return $else ? $else($cx, $in) : '';
         }
         if ($v === $in) {
@@ -501,7 +470,6 @@ class Runtime extends Encoder
         }
         return $ret;
     }
-
     /**
      * Get merged context.
      *
@@ -525,15 +493,14 @@ class Runtime extends Encoder
         }
         if ($cx['flags']['method'] || $cx['flags']['prop']) {
             if (!is_object($a)) {
-                $a = new StringObject($a);
+                $a = new String_Object($a);
             }
             foreach ($b as $i => $v) {
-                $a->$i = $v;
+                $a->{$i} = $v;
             }
         }
         return $a;
     }
-
     /**
      * For {{> partial}} .
      *
@@ -546,18 +513,14 @@ class Runtime extends Encoder
      */
     public static function p(array $cx, $p, $v, $pid, $sp = '')
     {
-        $pp = ($p === '@partial-block') ? "$p" . ($pid > 0 ? $pid : $cx['partialid']) : $p;
-
+        $pp = $p === '@partial-block' ? "{$p}" . ($pid > 0 ? $pid : $cx['partialid']) : $p;
         if (!isset($cx['partials'][$pp])) {
-            static::err($cx, "Can not find partial named as '$p' !!");
+            static::err($cx, "Can not find partial named as '{$p}' !!");
             return '';
         }
-
-        $cx['partialid'] = ($p === '@partial-block') ? (($pid > 0) ? $pid : (($cx['partialid'] > 0) ? $cx['partialid'] - 1 : 0)) : $pid;
-
+        $cx['partialid'] = $p === '@partial-block' ? $pid > 0 ? $pid : ($cx['partialid'] > 0 ? $cx['partialid'] - 1 : 0) : $pid;
         return call_user_func($cx['partials'][$pp], $cx, static::m($cx, $v[0][0], $v[1]), $sp);
     }
-
     /**
      * For {{#* inlinepartial}} .
      *
@@ -570,7 +533,6 @@ class Runtime extends Encoder
     {
         $cx['partials'][$p] = $code;
     }
-
     /* For single custom helpers.
      *
      * @param array<string,array|string|integer> $cx render time context for lightncandy
@@ -586,22 +548,12 @@ class Runtime extends Encoder
         if (isset($cx['blparam'][0][$ch])) {
             return $cx['blparam'][0][$ch];
         }
-
-        $options = [
-            'name' => $ch,
-            'hash' => $vars[1],
-            'contexts' => count($cx['scopes']) ? $cx['scopes'] : [null],
-            'fn.blockParams' => 0,
-            '_this' => &$_this,
-        ];
-
+        $options = ['name' => $ch, 'hash' => $vars[1], 'contexts' => count($cx['scopes']) ? $cx['scopes'] : [null], 'fn.blockParams' => 0, '_this' => &$_this];
         if ($cx['flags']['spvar']) {
-            $options['data'] = &$cx['sp_vars'];
+            $options['data'] =& $cx['sp_vars'];
         }
-
         return static::exch($cx, $ch, $vars, $options);
     }
-
     /**
      * For block custom helpers.
      *
@@ -617,29 +569,19 @@ class Runtime extends Encoder
      */
     public static function hbbch(array &$cx, $ch, $vars, &$_this, $inverted, $cb, $else = null)
     {
-        $options = [
-            'name' => $ch,
-            'hash' => $vars[1],
-            'contexts' => count($cx['scopes']) ? $cx['scopes'] : [null],
-            'fn.blockParams' => 0,
-            '_this' => &$_this,
-        ];
-
+        $options = ['name' => $ch, 'hash' => $vars[1], 'contexts' => count($cx['scopes']) ? $cx['scopes'] : [null], 'fn.blockParams' => 0, '_this' => &$_this];
         if ($cx['flags']['spvar']) {
-            $options['data'] = &$cx['sp_vars'];
+            $options['data'] =& $cx['sp_vars'];
         }
-
         if (isset($vars[2])) {
             $options['fn.blockParams'] = count($vars[2]);
         }
-
         // $invert the logic
         if ($inverted) {
             $tmp = $else;
             $else = $cb;
             $cb = $tmp;
         }
-
         $options['fn'] = function ($context = '_NO_INPUT_HERE_', $data = null) use ($cx, &$_this, $cb, $vars) {
             if ($cx['flags']['echo']) {
                 ob_start();
@@ -655,7 +597,7 @@ class Runtime extends Encoder
             } elseif (isset($cx['blparam'][0])) {
                 $ex = $cx['blparam'][0];
             }
-            if (($context === '_NO_INPUT_HERE_') || ($context === $_this)) {
+            if ($context === '_NO_INPUT_HERE_' || $context === $_this) {
                 $ret = $cb($cx, is_array($ex) ? static::m($cx, $_this, $ex) : $_this);
             } else {
                 $cx['scopes'][] = $_this;
@@ -667,7 +609,6 @@ class Runtime extends Encoder
             }
             return $cx['flags']['echo'] ? ob_get_clean() : $ret;
         };
-
         if ($else) {
             $options['inverse'] = function ($context = '_NO_INPUT_HERE_') use ($cx, $_this, $else) {
                 if ($cx['flags']['echo']) {
@@ -687,10 +628,8 @@ class Runtime extends Encoder
                 return '';
             };
         }
-
         return static::exch($cx, $ch, $vars, $options);
     }
-
     /**
      * Execute custom helper with prepared options
      *
@@ -704,15 +643,13 @@ class Runtime extends Encoder
     public static function exch(array $cx, $ch, $vars, &$options)
     {
         $args = $vars[0];
-        $args[] = &$options;
+        $args[] =& $options;
         $r = '';
-
         try {
             $r = call_user_func_array($cx['helpers'][$ch], $args);
         } catch (\Throwable $E) {
-            static::err($cx, "Runtime: call custom helper '$ch' error: " . $E->getMessage());
+            static::err($cx, "Runtime: call custom helper '{$ch}' error: " . $E->get_message());
         }
-
         return $r;
     }
 }

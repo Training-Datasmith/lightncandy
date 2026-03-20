@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 /*
 
 MIT License
@@ -11,15 +11,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Origin: https://github.com/zordius/lightncandy
 */
-
 /**
  * file to keep LightnCandy Parser
  *
  * @package    LightnCandy
  * @author     Zordius <zordius@gmail.com>
  */
-
-namespace LightnCandy;
+namespace Lightn_Candy;
 
 /**
  * LightnCandy Parser
@@ -31,7 +29,6 @@ class Parser extends Token
     public const PARTIALBLOCK = 9998;
     public const LITERAL = -1;
     public const SUBEXP = -2;
-
     /**
      * Get partial block id and fix the variable list
      *
@@ -40,7 +37,7 @@ class Parser extends Token
      * @return integer Return partial block id
      *
      */
-    public static function getPartialBlock(array &$vars)
+    public static function get_partial_block(array &$vars)
     {
         if (isset($vars[static::PARTIALBLOCK])) {
             $id = $vars[static::PARTIALBLOCK];
@@ -49,7 +46,6 @@ class Parser extends Token
         }
         return 0;
     }
-
     /**
      * Get block params and fix the variable list
      *
@@ -58,7 +54,7 @@ class Parser extends Token
      * @return array<string>|null Return list of block params or null
      *
      */
-    public static function getBlockParams(array &$vars)
+    public static function get_block_params(array &$vars)
     {
         if (isset($vars[static::BLOCKPARAM])) {
             $list = $vars[static::BLOCKPARAM];
@@ -66,7 +62,6 @@ class Parser extends Token
             return $list;
         }
     }
-
     /**
      * Return array presentation for a literal
      *
@@ -77,11 +72,10 @@ class Parser extends Token
      * @return array<integer|string> Return variable name array
      *
      */
-    protected static function getLiteral($name, $asis, $quote = false): array
+    protected static function get_literal($name, $asis, $quote = false): array
     {
-        return $asis ? [$name] : [static::LITERAL, $quote ? "'$name'" : $name];
+        return $asis ? [$name] : [static::LITERAL, $quote ? "'{$name}'" : $name];
     }
-
     /**
      * Return array presentation for an expression
      *
@@ -108,48 +102,39 @@ class Parser extends Token
      * @expect array(\LightnCandy\Parser::LITERAL, '123') when input '123', array('flags' => array('strpar' => 0, 'advar' => 1, 'this' => 0, 'parent' => 1), 'usedFeature' => array('parent' => 0)), 1
      * @expect array(\LightnCandy\Parser::LITERAL, 'null') when input 'null', array('flags' => array('strpar' => 0, 'advar' => 1, 'this' => 0, 'parent' => 1), 'usedFeature' => array('parent' => 0)), 1
      */
-    protected static function getExpression($v, array &$context, $pos)
+    protected static function get_expression($v, array &$context, $pos)
     {
-        $asis = ($pos === 0);
-
+        $asis = $pos === 0;
         // handle number
         if (is_numeric($v)) {
-            return static::getLiteral(strval(1 * $v), $asis);
+            return static::get_literal(strval(1 * $v), $asis);
         }
-
         // handle double quoted string
         if (preg_match('/^"(.*)"$/', $v, $matched)) {
-            return static::getLiteral(preg_replace('/([^\\\\])\\\\\\\\"/', '$1"', preg_replace('/^\\\\\\\\"/', '"', $matched[1])), $asis, true);
+            return static::get_literal(preg_replace('/([^\\\\])\\\\\\\\"/', '$1"', preg_replace('/^\\\\\\\\"/', '"', $matched[1])), $asis, true);
         }
-
         // handle single quoted string
         if (preg_match('/^\\\\\'(.*)\\\\\'$/', $v, $matched)) {
-            return static::getLiteral($matched[1], $asis, true);
+            return static::get_literal($matched[1], $asis, true);
         }
-
         // handle boolean, null and undefined
         if (preg_match('/^(true|false|null|undefined)$/', $v)) {
-            return static::getLiteral($v, $asis);
+            return static::get_literal($v, $asis);
         }
-
         $ret = [];
         $levels = 0;
-
         // handle ..
         if ($v === '..') {
             $v = '../';
         }
-
         // Trace to parent for ../ N times
-        $v = preg_replace_callback('/\\.\\.\\//', function () use (&$levels): string {
+        $v = preg_replace_callback('/\.\.\//', function () use (&$levels): string {
             $levels++;
             return '';
         }, trim($v));
-
         // remove ./ in path
-        $v = preg_replace('/\\.\\//', '', $v, -1, $scoped);
-
-        $strp = (($pos !== 0) && $context['flags']['strpar']);
+        $v = preg_replace('/\.\//', '', $v, -1, $scoped);
+        $strp = $pos !== 0 && $context['flags']['strpar'];
         if ($levels && !$strp) {
             $ret[] = $levels;
             if (!$context['flags']['parent']) {
@@ -157,41 +142,34 @@ class Parser extends Token
             }
             $context['usedFeature']['parent']++;
         }
-
-        if ($context['flags']['advar'] && preg_match('/\\]/', $v)) {
+        if ($context['flags']['advar'] && preg_match('/\]/', $v)) {
             preg_match_all(static::VARNAME_SEARCH, $v, $matchedall);
         } else {
-            preg_match_all('/([^\\.\\/]+)/', $v, $matchedall);
+            preg_match_all('/([^\.\/]+)/', $v, $matchedall);
         }
-
         if ($v !== '.') {
             $vv = implode('.', $matchedall[1]);
             if (strlen($v) !== strlen($vv)) {
-                $context['error'][] = "Unexpected charactor in '$v' ! (should it be '$vv' ?)";
+                $context['error'][] = "Unexpected charactor in '{$v}' ! (should it be '{$vv}' ?)";
             }
         }
-
         foreach ($matchedall[1] as $m) {
             if ($context['flags']['advar'] && substr($m, 0, 1) === '[') {
                 $ret[] = substr($m, 1, -1);
-            } elseif ((!$context['flags']['this'] || ($m !== 'this')) && ($m !== '.')) {
+            } elseif ((!$context['flags']['this'] || $m !== 'this') && $m !== '.') {
                 $ret[] = $m;
             } else {
                 $scoped++;
             }
         }
-
         if ($strp) {
             return [static::LITERAL, "'" . implode('.', $ret) . "'"];
         }
-
-        if (($scoped > 0) && ($levels === 0) && (count($ret) > 0)) {
+        if ($scoped > 0 && $levels === 0 && count($ret) > 0) {
             array_unshift($ret, 0);
         }
-
         return $ret;
     }
-
     /**
      * Parse the token and return parsed result.
      *
@@ -234,24 +212,20 @@ class Parser extends Token
     {
         $vars = static::analyze($token[static::POS_INNERTAG], $context);
         if ($token[static::POS_OP] === '>') {
-            $fn = static::getPartialName($vars);
+            $fn = static::get_partial_name($vars);
         } elseif ($token[static::POS_OP] === '#*') {
-            $fn = static::getPartialName($vars, 1);
+            $fn = static::get_partial_name($vars, 1);
         }
-
-        $avars = static::advancedVariable($vars, $context, static::toString($token));
-
-        if (isset($fn) && ($fn !== null)) {
+        $avars = static::advanced_variable($vars, $context, static::to_string($token));
+        if (isset($fn) && $fn !== null) {
             if ($token[static::POS_OP] === '>') {
                 $avars[0] = $fn;
             } elseif ($token[static::POS_OP] === '#*') {
                 $avars[1] = $fn;
             }
         }
-
-        return [($token[static::POS_BEGINRAW] === '{') || ($token[static::POS_OP] === '&') || $context['flags']['noesc'] || $context['rawblock'], $avars];
+        return [$token[static::POS_BEGINRAW] === '{' || $token[static::POS_OP] === '&' || $context['flags']['noesc'] || $context['rawblock'], $avars];
     }
-
     /**
      * Get partial name from "foo" or [foo] or \'foo\'
      *
@@ -267,14 +241,13 @@ class Parser extends Token
      * @expect array('foo') when input array("\\'foo\\'")
      * @expect array('foo') when input array(0, 'foo'), 1
      */
-    public static function getPartialName(array &$vars, $pos = 0)
+    public static function get_partial_name(array &$vars, $pos = 0)
     {
         if (!isset($vars[$pos])) {
             return;
         }
-        return preg_match(SafeString::IS_SUBEXP_SEARCH, $vars[$pos]) ? null : [preg_replace('/^("(.+)")|(\\[(.+)\\])|(\\\\\'(.+)\\\\\')$/', '$2$4$6', $vars[$pos])];
+        return preg_match(Safe_String::IS_SUBEXP_SEARCH, $vars[$pos]) ? null : [preg_replace('/^("(.+)")|(\[(.+)\])|(\\\\\'(.+)\\\\\')$/', '$2$4$6', $vars[$pos])];
     }
-
     /**
      * Parse a subexpression then return parsed result.
      *
@@ -289,7 +262,7 @@ class Parser extends Token
     {
         $context['usedFeature']['subexp']++;
         $vars = static::analyze(substr($expression, 1, -1), $context);
-        $avars = static::advancedVariable($vars, $context, $expression);
+        $avars = static::advanced_variable($vars, $context, $expression);
         if (isset($avars[0][0]) && !$context['flags']['exhlp']) {
             if (!Validator::helper($context, $avars, true)) {
                 $context['error'][] = "Can not find custom helper function defination {$avars[0][0]}() !";
@@ -297,7 +270,6 @@ class Parser extends Token
         }
         return [static::SUBEXP, $avars, $expression];
     }
-
     /**
      * Check a parsed result is a subexpression or not
      *
@@ -312,11 +284,10 @@ class Parser extends Token
      * @expect false when input array(\LightnCandy\Parser::SUBEXP, 0, '', 0)
      * @expect true when input array(\LightnCandy\Parser::SUBEXP, 0, '')
      */
-    public static function isSubExp($var): bool
+    public static function is_sub_exp($var): bool
     {
-        return is_array($var) && (count($var) === 3) && ($var[0] === static::SUBEXP) && is_string($var[2]);
+        return is_array($var) && count($var) === 3 && $var[0] === static::SUBEXP && is_string($var[2]);
     }
-
     /**
      * Analyze parsed token for advanved variables.
      *
@@ -334,66 +305,54 @@ class Parser extends Token
      * @expect array('fo o' => array(\LightnCandy\Parser::LITERAL, '123')) when input array('[fo o]=123'), array('flags' => array('advar' => 1, 'namev' => 1, 'this' => 0)), 0
      * @expect array('fo o' => array(\LightnCandy\Parser::LITERAL, '\'bar\'')) when input array('[fo o]="bar"'), array('flags' => array('advar' => 1, 'namev' => 1, 'this' => 0)), 0
      */
-    protected static function advancedVariable($vars, array &$context, $token): array
+    protected static function advanced_variable($vars, array &$context, $token): array
     {
         $ret = [];
         $i = 0;
         foreach ($vars as $idx => $var) {
             // handle (...)
-            if (preg_match(SafeString::IS_SUBEXP_SEARCH, $var)) {
+            if (preg_match(Safe_String::IS_SUBEXP_SEARCH, $var)) {
                 $ret[$i] = static::subexpression($var, $context);
                 $i++;
                 continue;
             }
-
             // handle |...|
-            if (preg_match(SafeString::IS_BLOCKPARAM_SEARCH, $var, $matched)) {
+            if (preg_match(Safe_String::IS_BLOCKPARAM_SEARCH, $var, $matched)) {
                 $ret[static::BLOCKPARAM] = explode(' ', $matched[1]);
                 continue;
             }
-
             if ($context['flags']['namev']) {
-                if (preg_match('/^((\\[([^\\]]+)\\])|([^=^["\']+))=(.+)$/', $var, $m)) {
+                if (preg_match('/^((\[([^\]]+)\])|([^=^["\']+))=(.+)$/', $var, $m)) {
                     if (!$context['flags']['advar'] && $m[3]) {
-                        $context['error'][] = "Wrong argument name as '[$m[3]]' in $token ! You should fix your template or compile with LightnCandy::FLAG_ADVARNAME flag.";
+                        $context['error'][] = "Wrong argument name as '[{$m[3]}]' in {$token} ! You should fix your template or compile with LightnCandy::FLAG_ADVARNAME flag.";
                     }
                     $idx = $m[3] ?: $m[4];
                     $var = $m[5];
                     // handle foo=(...)
-                    if (preg_match(SafeString::IS_SUBEXP_SEARCH, $var)) {
+                    if (preg_match(Safe_String::IS_SUBEXP_SEARCH, $var)) {
                         $ret[$idx] = static::subexpression($var, $context);
                         continue;
                     }
                 }
             }
-
-            if ($context['flags']['advar'] && !preg_match("/^(\"|\\\\')(.*)(\"|\\\\')$/", $var)) {
+            if ($context['flags']['advar'] && !preg_match("/^(\"|\\\\')(.*)(\"|\\\\')\$/", $var)) {
                 // foo]  Rule 1: no starting [ or [ not start from head
-                if (preg_match('/^[^\\[\\.]+[\\]\\[]/', $var)
-                    // [bar  Rule 2: no ending ] or ] not in the end
-                    || preg_match('/[\\[\\]][^\\]\\.]+$/', $var)
-                    // ]bar. Rule 3: middle ] not before .
-                    || preg_match('/\\][^\\]\\[\\.]+\\./', $var)
-                    // .foo[ Rule 4: middle [ not after .
-                    || preg_match('/\\.[^\\]\\[\\.]+\\[/', preg_replace('/^(..\\/)+/', '', preg_replace('/\\[[^\\]]+\\]/', '[XXX]', $var)))
-                ) {
-                    $context['error'][] = "Wrong variable naming as '$var' in $token !";
+                if (preg_match('/^[^\[\.]+[\]\[]/', $var) || preg_match('/[\[\]][^\]\.]+$/', $var) || preg_match('/\][^\]\[\.]+\./', $var) || preg_match('/\.[^\]\[\.]+\[/', preg_replace('/^(..\/)+/', '', preg_replace('/\[[^\]]+\]/', '[XXX]', $var)))) {
+                    $context['error'][] = "Wrong variable naming as '{$var}' in {$token} !";
                 } else {
-                    $name = preg_replace('/(\\[.+?\\])/', '', $var);
+                    $name = preg_replace('/(\[.+?\])/', '', $var);
                     // Scan for invalid charactors which not be protected by [ ]
                     // now make ( and ) pass, later fix
                     if (preg_match('/[!"#%\'*+,;<=>{|}~]/', $name)) {
                         if (!$context['flags']['namev'] && preg_match('/.+=.+/', $name)) {
-                            $context['error'][] = "Wrong variable naming as '$var' in $token ! If you try to use foo=bar param, you should enable LightnCandy::FLAG_NAMEDARG !";
+                            $context['error'][] = "Wrong variable naming as '{$var}' in {$token} ! If you try to use foo=bar param, you should enable LightnCandy::FLAG_NAMEDARG !";
                         } else {
-                            $context['error'][] = "Wrong variable naming as '$var' in $token ! You should wrap ! \" # % & ' * + , ; < = > { | } ~ into [ ]";
+                            $context['error'][] = "Wrong variable naming as '{$var}' in {$token} ! You should wrap ! \" # % & ' * + , ; < = > { | } ~ into [ ]";
                         }
                     }
                 }
             }
-
-            $var = static::getExpression($var, $context, $idx);
-
+            $var = static::get_expression($var, $context, $idx);
             if (is_string($idx)) {
                 $ret[$idx] = $var;
             } else {
@@ -403,7 +362,6 @@ class Parser extends Token
         }
         return $ret;
     }
-
     /**
      * Detect quote charactors
      *
@@ -411,44 +369,37 @@ class Parser extends Token
      *
      * @return array<string,integer>|null Expected ending string when quote charactor be detected
      */
-    protected static function detectQuote($string)
+    protected static function detect_quote($string)
     {
         // begin with '(' without ending ')'
         if (preg_match('/^\([^\)]*$/', $string)) {
             return [')', 1];
         }
-
         // begin with '"' without ending '"'
         if (preg_match('/^"[^"]*$/', $string)) {
             return ['"', 0];
         }
-
         // begin with \' without ending '
         if (preg_match('/^\\\\\'[^\']*$/', $string)) {
             return ['\'', 0];
         }
-
         // '="' exists without ending '"'
         if (preg_match('/^[^"]*="[^"]*$/', $string)) {
             return ['"', 0];
         }
-
         // '[' exists without ending ']'
-        if (preg_match('/^([^"\'].+)?\\[[^\\]]*$/', $string)) {
+        if (preg_match('/^([^"\'].+)?\[[^\]]*$/', $string)) {
             return [']', 0];
         }
-
         // =\' exists without ending '
         if (preg_match('/^[^\']*=\\\\\'[^\']*$/', $string)) {
             return ['\'', 0];
         }
-
         // continue to next match when =( exists without ending )
         if (preg_match('/.+(\(+)[^\)]*$/', $string, $m)) {
             return [')', strlen($m[1])];
         }
     }
-
     /**
      * Analyze a token string and return parsed result.
      *
@@ -472,41 +423,38 @@ class Parser extends Token
     {
         $count = preg_match_all('/(\s*)([^\s]+)/', $token, $matchedall);
         // Parse arguments and deal with "..." or [...] or (...) or \'...\' or |...|
-        if (($count > 0) && $context['flags']['advar']) {
+        if ($count > 0 && $context['flags']['advar']) {
             $vars = [];
             $prev = '';
             $expect = 0;
             $quote = 0;
             $stack = 0;
-
             foreach ($matchedall[2] as $index => $t) {
-                $detected = static::detectQuote($t);
-
+                $detected = static::detect_quote($t);
                 if ($expect === ')') {
-                    if ($detected && ($detected[0] !== ')')) {
+                    if ($detected && $detected[0] !== ')') {
                         $quote = $detected[0];
                     }
                     if (substr($t, -1, 1) === $quote) {
                         $quote = 0;
                     }
                 }
-
                 // continue from previous match when expect something
                 if ($expect) {
-                    $prev .= "{$matchedall[1][$index]}$t";
-                    if (($quote === 0) && ($stack > 0) && preg_match('/(.+=)*(\\(+)/', $t, $m)) {
+                    $prev .= "{$matchedall[1][$index]}{$t}";
+                    if ($quote === 0 && $stack > 0 && preg_match('/(.+=)*(\(+)/', $t, $m)) {
                         $stack += strlen($m[2]);
                     }
                     // end an argument when end with expected charactor
                     if (substr($t, -1, 1) === $expect) {
                         if ($stack > 0) {
-                            preg_match('/(\\)+)$/', $t, $matchedq);
+                            preg_match('/(\)+)$/', $t, $matchedq);
                             $stack -= isset($matchedq[0]) ? strlen($matchedq[0]) : 1;
                             if ($stack > 0) {
                                 continue;
                             }
                             if ($stack < 0) {
-                                $context['error'][] = "Unexcepted ')' in expression '$token' !!";
+                                $context['error'][] = "Unexcepted ')' in expression '{$token}' !!";
                                 $expect = 0;
                                 break;
                             }
@@ -517,39 +465,34 @@ class Parser extends Token
                         continue;
                     }
                     // end an argument when end with expected charactor
-                    if (($expect == ']') && (strpos($t, $expect) !== false)) {
+                    if ($expect == ']' && strpos($t, $expect) !== false) {
                         $t = $prev;
-                        $detected = static::detectQuote($t);
+                        $detected = static::detect_quote($t);
                         $expect = 0;
                     } else {
                         continue;
                     }
                 }
-
                 if ($detected) {
                     $prev = $t;
                     $expect = $detected[0];
                     $stack = $detected[1];
                     continue;
                 }
-
                 // continue to next match when 'as' without ending '|'
-                if (($t === 'as') && (count($vars) > 0)) {
+                if ($t === 'as' && count($vars) > 0) {
                     $prev = '';
                     $expect = '|';
                     $stack = 1;
                     continue;
                 }
-
                 $vars[] = $t;
             }
-
             if ($expect) {
-                $context['error'][] = "Error in '$token': expect '$expect' but the token ended!!";
+                $context['error'][] = "Error in '{$token}': expect '{$expect}' but the token ended!!";
             }
-
             return $vars;
         }
-        return ($count > 0) ? $matchedall[2] : explode(' ', $token);
+        return $count > 0 ? $matchedall[2] : explode(' ', $token);
     }
 }

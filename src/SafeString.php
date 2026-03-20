@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 /*
 
 MIT License
@@ -11,34 +11,24 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Origin: https://github.com/zordius/lightncandy
 */
-
 /**
  * file to keep LightnCandy string utilities
  *
  * @package    LightnCandy
  * @author     Zordius <zordius@gmail.com>
  */
-
-namespace LightnCandy;
+namespace Lightn_Candy;
 
 /**
  * LightnCandy SafeString class
  */
-class SafeString extends Encoder
+class Safe_String extends Encoder
 {
     public const EXTENDED_COMMENT_SEARCH = '/{{!--.*?--}}/s';
     public const IS_SUBEXP_SEARCH = '/^\(.+\)$/s';
     public const IS_BLOCKPARAM_SEARCH = '/^ +\|(.+)\|$/s';
-
     private $string;
-
-    public static $jsContext = [
-        'flags' => [
-            'jstrue' => 1,
-            'jsobj' => 1,
-        ],
-    ];
-
+    public static $js_context = ['flags' => ['jstrue' => 1, 'jsobj' => 1]];
     /**
      * Constructor
      *
@@ -47,14 +37,12 @@ class SafeString extends Encoder
      */
     public function __construct($str, $escape = false)
     {
-        $this->string = $escape ? (($escape === 'encq') ? static::encq(static::$jsContext, $str) : static::enc(static::$jsContext, $str)) : $str;
+        $this->string = $escape ? $escape === 'encq' ? static::encq(static::$js_context, $str) : static::enc(static::$js_context, $str) : $str;
     }
-
     public function __toString(): string
     {
         return $this->string;
     }
-
     /**
      * Strip extended comments {{!-- .... --}}
      *
@@ -66,11 +54,10 @@ class SafeString extends Encoder
      * @expect 'abc{{!}}cde' when input 'abc{{!}}cde'
      * @expect 'abc{{! }}cde' when input 'abc{{!----}}cde'
      */
-    public static function stripExtendedComments($template): ?string
+    public static function strip_extended_comments($template): ?string
     {
         return preg_replace(static::EXTENDED_COMMENT_SEARCH, '{{! }}', $template);
     }
-
     /**
      * Escape template
      *
@@ -82,7 +69,7 @@ class SafeString extends Encoder
      * @expect 'a\\\\bc' when input 'a\bc'
      * @expect 'a\\\'bc' when input 'a\'bc'
      */
-    public static function escapeTemplate($template): string
+    public static function escape_template($template): string
     {
         return addcslashes(addcslashes($template, '\\'), "'");
     }

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 /*
 
 MIT License
@@ -11,15 +11,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Origin: https://github.com/zordius/lightncandy
 */
-
 /**
  * file of LightnCandy Expression handler
  *
  * @package    LightnCandy
  * @author     Zordius <zordius@gmail.com>
  */
-
-namespace LightnCandy;
+namespace Lightn_Candy;
 
 /**
  * LightnCandy Expression handler
@@ -38,11 +36,10 @@ class Expression
      * @expect 'false' when input 0
      * @expect 'false' when input -1
      */
-    public static function boolString($v): string
+    public static function bool_string($v): string
     {
-        return ($v > 0) ? 'true' : 'false';
+        return $v > 0 ? 'true' : 'false';
     }
-
     /**
      * Get string presentation for a string list
      *
@@ -54,13 +51,12 @@ class Expression
      * @expect "'a'" when input array('a')
      * @expect "'a','b','c'" when input array('a', 'b', 'c')
      */
-    public static function listString($list): string
+    public static function list_string($list): string
     {
-        return implode(',', (array_map(function (string $v): string {
+        return implode(',', array_map(function (string $v): string {
             return "'" . addcslashes($v, "'\\") . "'";
-        }, $list)));
+        }, $list));
     }
-
     /**
      * Get string presentation for an array
      *
@@ -72,13 +68,12 @@ class Expression
      * @expect "['a']" when input array('a')
      * @expect "['a']['b']['c']" when input array('a', 'b', 'c')
      */
-    public static function arrayString($list): string
+    public static function array_string($list): string
     {
-        return implode('', (array_map(function (string $v): string {
+        return implode('', array_map(function (string $v): string {
             return "['" . addcslashes($v, "'\\") . "']";
-        }, $list)));
+        }, $list));
     }
-
     /**
      * Analyze an expression
      *
@@ -94,14 +89,12 @@ class Expression
     {
         $levels = 0;
         $spvar = false;
-
         if (isset($var[0])) {
             // trace to parent
             if (!is_string($var[0]) && is_int($var[0])) {
                 $levels = array_shift($var);
             }
         }
-
         if (isset($var[0])) {
             // handle @root, @index, @key, @last, etc
             if ($context['flags']['spvar']) {
@@ -111,10 +104,8 @@ class Expression
                 }
             }
         }
-
         return [$levels, $spvar, $var];
     }
-
     /**
      * get normalized handlebars expression for a variable
      *
@@ -132,10 +123,10 @@ class Expression
      * @expect '../../[a].[b]' when input 2, false, array('a', 'b')
      * @expect '../[a\'b]' when input 1, false, array('a\'b')
      */
-    public static function toString($levels, $spvar, $var): string
+    public static function to_string($levels, $spvar, $var): string
     {
-        return ($spvar ? '@' : '') . str_repeat('../', $levels) . ((is_array($var) && count($var)) ? implode('.', array_map(function ($v): string {
-            return ($v === null) ? 'this' : "[$v]";
+        return ($spvar ? '@' : '') . str_repeat('../', $levels) . (is_array($var) && count($var) ? implode('.', array_map(function ($v): string {
+            return $v === null ? 'this' : "[{$v}]";
         }, $var)) : 'this');
     }
 }

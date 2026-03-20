@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 /*
 
 MIT License
@@ -11,15 +11,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Origin: https://github.com/zordius/lightncandy
 */
-
 /**
  * file to keep LightnCandy Encoder
  *
  * @package    LightnCandy
  * @author     Zordius <zordius@gmail.com>
  */
-
-namespace LightnCandy;
+namespace Lightn_Candy;
 
 /**
  * LightnCandy class to encode.
@@ -54,19 +52,16 @@ class Encoder
         if ($ex) {
             return $v;
         }
-
         if ($v === true) {
             if ($cx['flags']['jstrue']) {
                 return 'true';
             }
         }
-
-        if (($v === false)) {
+        if ($v === false) {
             if ($cx['flags']['jstrue']) {
                 return 'false';
             }
         }
-
         if (is_array($v)) {
             if (!$cx['flags']['jsobj']) {
                 return 'Array';
@@ -80,10 +75,8 @@ class Encoder
             }
             return join(',', $ret);
         }
-
-        return "$v";
+        return "{$v}";
     }
-
     /**
      * Get html encoded string
      *
@@ -100,7 +93,6 @@ class Encoder
     {
         return htmlspecialchars(static::raw($cx, $var), ENT_QUOTES, 'UTF-8');
     }
-
     /**
      * LightnCandy runtime method for {{var}} , and deal with single quote to same as handlebars.js .
      *
